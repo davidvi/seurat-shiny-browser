@@ -13,8 +13,10 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install R packages
-RUN R -e "install.packages(c('Seurat', 'shinyWidgets', 'shinyjs', 'readxl', 'preprocessCore', 'limma', 'ggplot2', 'tidyverse', 'DT'))"
+# Install BiocManager and R packages
+RUN R -e "install.packages('BiocManager')" \
+    && R -e "BiocManager::install(c('preprocessCore', 'Seurat'))" \
+    && R -e "install.packages(c('shinyWidgets', 'shinyjs', 'readxl', 'limma', 'ggplot2', 'tidyverse', 'DT'))"
 
 # Create directories
 RUN mkdir -p /home/shiny-app/data
