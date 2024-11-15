@@ -1,4 +1,5 @@
-FROM r-base:latest
+FROM r-base:4.2.2
+
 
 # Set environment variables for non-interactive installation
 ENV DEBIAN_FRONTEND=noninteractive
@@ -13,10 +14,16 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install BiocManager and R packages
-RUN R -e "install.packages('BiocManager')" \
-    && R -e "BiocManager::install(c('preprocessCore', 'Seurat', 'tidyverse', 'ggplot2', 'DT'))" \
-    && R -e "install.packages(c('shinyWidgets', 'shinyjs', 'readxl'))"
+# Install BiocManager
+RUN R -e "install.packages('BiocManager')"
+
+# Install Bioconductor packages
+RUN R -e "BiocManager::install(c('preprocessCore', 'Seurat'))"
+
+# Install CRAN packages
+RUN R -e "install.packages(c('tidyverse', 'ggplot2', 'DT', 'shinyWidgets', 'shinyjs', 'readxl'))"
+
+RUN R -e "installed_packages <- installed.packages(); print(installed_packages[, 'Package'])"
 
 # Create directories
 RUN mkdir -p /home/shiny-app/data
@@ -28,4 +35,4 @@ COPY server.R /home/shiny-app/server.R
 EXPOSE 3030
 
 # Run the server script
-# CMD ["Rscript", "/home/shiny-app/server.R"]
+CMD ["Rscript", "/home/shiny-app/server.R"]
