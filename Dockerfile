@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y \
 # Install BiocManager and R packages
 RUN R -e "install.packages('BiocManager')" \
     && R -e "BiocManager::install(c('preprocessCore', 'Seurat'))" \
-    && R -e "install.packages(c('shinyWidgets', 'shinyjs', 'readxl', 'limma', 'ggplot2', 'tidyverse', 'DT'))"
+    && R -e "install.packages(c('shinyWidgets', 'shinyjs', 'readxl', 'ggplot2', 'tidyverse', 'DT'))"
 
 # Create directories
 RUN mkdir -p /home/shiny-app/data

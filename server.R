@@ -5,7 +5,6 @@ suppressPackageStartupMessages({
   library(shinyjs)
   library(readxl)
   library(preprocessCore)
-  library(limma)
   library(ggplot2)
   library(tidyverse)
   library(DT)
