@@ -28,4 +28,4 @@ COPY server.R /home/shiny-app/server.R
 EXPOSE 3030
 
 # Run the server script
-CMD ["Rscript", "/home/shiny-app/server.R"]
+# CMD ["Rscript", "/home/shiny-app/server.R"]
