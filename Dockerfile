@@ -28,11 +28,15 @@ RUN R -e "installed_packages <- installed.packages(); print(installed_packages[,
 # Create directories
 RUN mkdir -p /home/shiny-app/data
 
+# Create directories for app structure
+RUN mkdir -p /home/shiny-app/tabs
+
 # Copy application files
 COPY global.R /home/shiny-app/global.R
 COPY ui.R /home/shiny-app/ui.R
 COPY server.R /home/shiny-app/server.R
 COPY app.R /home/shiny-app/app.R
+COPY tabs/*.R /home/shiny-app/tabs/
 
 # Expose port
 EXPOSE 3030
