@@ -12,8 +12,22 @@ suppressPackageStartupMessages({
 })
 
 # load data
-# base_folder <- "/home/shiny-app/data/"
-base_folder <- "/Users/vanijzen/Developer/seurat-shiny-browser/data/"
+# Get the data folder path from options or use a default
+if (!is.null(getOption("seurat_browser_data_folder"))) {
+  base_folder <- getOption("seurat_browser_data_folder")
+} else {
+  # Fallback defaults, prioritizing Docker path
+  if (dir.exists("/home/shiny-app/data/")) {
+    base_folder <- "/home/shiny-app/data/"
+  }
+}
+
+# Ensure the folder path ends with a slash
+if (!endsWith(base_folder, "/")) {
+  base_folder <- paste0(base_folder, "/")
+}
+
+message("Using data folder: ", base_folder)
 
 # Get folders in data directory
 all_folders <- list.dirs(path = base_folder, full.names = FALSE, recursive = FALSE)

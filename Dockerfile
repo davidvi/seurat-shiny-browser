@@ -42,5 +42,14 @@ COPY server/*.R /home/shiny-app/server/
 # Expose port
 EXPOSE 3030
 
-# Run the application
-CMD ["Rscript", "/home/shiny-app/app.R"]
+# Create directory for server files
+RUN mkdir -p /home/shiny-app/server
+
+# Set working directory
+WORKDIR /home/shiny-app
+
+# Set entry point that allows for command-line arguments
+ENTRYPOINT ["Rscript", "app.R"]
+
+# Default command - will be overridden if arguments are passed to docker run
+CMD ["/home/shiny-app/data"]
