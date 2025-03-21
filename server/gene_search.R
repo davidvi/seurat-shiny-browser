@@ -4,8 +4,10 @@
 
 observeEvent(input$search_button, {
   rv$gene <- toupper(input$gene)
-  # Switch to the single gene visualization tab
-  updateTabsetPanel(session, "visualization_tabs", selected = "Single Gene Visualization")
+  # Switch to the single gene visualization tab for each tab that uses the module
+  updateTabsetPanel(session, "visualize_viz_tabs", selected = "Single Gene Visualization")
+  updateTabsetPanel(session, "edit_viz_tabs", selected = "Single Gene Visualization")
+  updateTabsetPanel(session, "analyze_viz_tabs", selected = "Single Gene Visualization")
 })
 
 ### search multiple genes ###
@@ -35,8 +37,10 @@ observeEvent(input$multi_gene_search_button, {
   # Provide feedback on how many genes were found
   showNotification(paste(length(genes), "genes selected for visualization"), type = "message")
   
-  # Switch to the multi-gene visualization tab
-  updateTabsetPanel(session, "visualization_tabs", selected = "Multi-Gene Visualization")
+  # Switch to the multi-gene visualization tab in all modules
+  updateTabsetPanel(session, "visualize_viz_tabs", selected = "Multi-Gene Visualization")
+  updateTabsetPanel(session, "edit_viz_tabs", selected = "Multi-Gene Visualization")
+  updateTabsetPanel(session, "analyze_viz_tabs", selected = "Multi-Gene Visualization")
 })
 
 ### select reduction ###
@@ -52,33 +56,12 @@ observeEvent(input$metadata_column_selector, {
   if(input$metadata_column_selector == "ident") {
     # No need to do anything special, DimPlot uses ident by default
   }
-  # If metadata column changed, switch to the metadata visualization tab
-  updateTabsetPanel(session, "visualization_tabs", selected = "Metadata Visualization")
+  # If metadata column changed, switch to the metadata visualization tab in all modules
+  updateTabsetPanel(session, "visualize_viz_tabs", selected = "Metadata Visualization")
+  updateTabsetPanel(session, "edit_viz_tabs", selected = "Metadata Visualization")
+  updateTabsetPanel(session, "analyze_viz_tabs", selected = "Metadata Visualization")
 })
 
-### cluster ordering UI for dotplot ###
-
-output$cluster_order_ui <- renderUI({
-  if(is.null(rv$sample) || is.null(rv$cluster_names) || length(rv$cluster_names) == 0) {
-    return(NULL)
-  }
-  
-  # Create UI for cluster ordering only when viewing the dotplot tab
-  if(input$visualization_tabs == "Multi-Gene Visualization") {
-    tagList(
-      h4("Cluster Order for Dotplot"),
-      selectInput(
-        inputId = "cluster_order_type",
-        label = "Order clusters by:",
-        choices = c(
-          "Default" = "default", 
-          "Alphabetical" = "alphabetical"
-        ),
-        selected = "default"
-      )
-    )
-  }
-})
 
 # Initialize multiple_genes in rv if needed
 observe({

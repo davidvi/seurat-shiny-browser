@@ -246,7 +246,8 @@ observeEvent(input$merge_button, {
       rv$cluster_names <- levels(Idents(merged_obj))
       
       # Update cluster selectors
-      updateSelectInput(session, "cluster_name_selector", choices = rv$cluster_names)
+      updatePickerInput(session, "cluster_name_selector", choices = rv$cluster_names)
+      updatePickerInput(session, "delete_cluster_selector", choices = rv$cluster_names)
       updateSelectInput(session, "cluster_name_selector_analyze", choices = rv$cluster_names)
       updateSelectInput(session, "first_cluster_name_selector", choices = rv$cluster_names)
       updateSelectInput(session, "second_cluster_name_selector", choices = rv$cluster_names)

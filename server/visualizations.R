@@ -1,153 +1,79 @@
 # Visualization module
+source("tabs/visualization_module.R")
+
+# Setup visualization outputs for each tab
+# This replaces all the individual plot renderers with the modular approach
 
 # Visualize tab plots
-output$violin_plot_visualize <- renderPlot({
-  if(is.null(rv$sample) || is.null(rv$gene)) {
-    plot.new()
-    text(0.5, 0.5, "No sample or gene selected", cex = 1.2)
-    return()
-  }
-  
-  tryCatch({
-    VlnPlot(rv$sample, features = c(rv$gene), pt.size = 0) + NoLegend() + xlab("")
-  }, error = function(e) {
-    plot.new()
-    text(0.5, 0.5, paste("Error displaying violin plot:", e$message), cex = 1.2)
-  })
-})
-
-output$feature_plot_visualize <- renderPlot({
-  if(is.null(rv$sample) || is.null(rv$gene)) {
-    plot.new()
-    text(0.5, 0.5, "No sample or gene selected", cex = 1.2)
-    return()
-  }
-  
-  tryCatch({
-    FeaturePlot(rv$sample, 
-               features = rv$gene, 
-               reduction = rv$selected_reduction, 
-               label = TRUE) + 
-      NoLegend()
-  }, error = function(e) {
-    plot.new()
-    text(0.5, 0.5, paste("Cannot display feature on", rv$selected_reduction, "\nError:", e$message), cex = 1.2)
-  })
-})
-
-output$dot_plot_visualize <- renderPlot({
-  if(is.null(rv$sample) || is.null(rv$multiple_genes) || length(rv$multiple_genes) == 0) {
-    plot.new()
-    text(0.5, 0.5, "No sample or genes selected", cex = 1.2)
-    return()
-  }
-  
-  # Validate genes exist in the dataset
-  valid_genes <- rv$multiple_genes[rv$multiple_genes %in% rownames(rv$sample)]
-  if(length(valid_genes) == 0) {
-    plot.new()
-    text(0.5, 0.5, "None of the selected genes were found in the dataset", cex = 1.2)
-    return()
-  }
-  
-  # If some genes were invalid, show a notification
-  if(length(valid_genes) < length(rv$multiple_genes)) {
-    missing_genes <- setdiff(rv$multiple_genes, valid_genes)
-    showNotification(
-      paste("Some genes were not found in the dataset:", 
-            paste(missing_genes, collapse = ", ")), 
-      type = "warning"
-    )
-  }
-  
-  tryCatch({
-    # Get the current cluster identities
-    cluster_ids <- levels(Idents(rv$sample))
-    
-    # Get order of clusters based on user selection
-    if(!is.null(input$cluster_order_type)) {
-      if(input$cluster_order_type == "alphabetical") {
-        # Sort alphabetically
-        cluster_ids <- sort(cluster_ids)
-      }
-    }
-    
-    # Create the dotplot with ordered clusters
-    DotPlot(rv$sample, 
-           features = valid_genes, 
-           cols = c("lightgrey", "blue"),
-           dot.scale = 6,
-           cluster.idents = FALSE) + 
-      RotatedAxis() +
-      theme(
-        axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
-        plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
-        legend.position = "right"
-      ) +
-      labs(title = "Gene Expression Dotplot")
-      
-  }, error = function(e) {
-    plot.new()
-    text(0.5, 0.5, paste("Error creating dotplot:", e$message), cex = 1.2)
-  })
-})
-
-output$dim_plot_visualize <- renderPlot({
-  if(is.null(rv$sample)) {
-    plot.new()
-    text(0.5, 0.5, "No sample loaded", cex = 1.2)
-    return()
-  }
-  
-  tryCatch({
-    if(input$metadata_column_selector == "ident") {
-      # For identity class, use DimPlot
-      DimPlot(rv$sample, reduction = rv$selected_reduction, label = TRUE)
-    } else {
-      # Check if the selected metadata is continuous or categorical
-      meta_values <- rv$sample@meta.data[[input$metadata_column_selector]]
-      
-      # If it's numeric and has more than a few unique values, treat as continuous
-      if(is.numeric(meta_values) && length(unique(meta_values)) > 10) {
-        # For continuous data, use FeaturePlot
-        FeaturePlot(rv$sample, 
-                  features = input$metadata_column_selector, 
-                  reduction = rv$selected_reduction)
-      } else {
-        # For categorical data, use DimPlot
-        DimPlot(rv$sample, 
-               reduction = rv$selected_reduction, 
-               group.by = input$metadata_column_selector)
-      }
-    }
-  }, error = function(e) {
-    plot.new()
-    text(0.5, 0.5, paste("Cannot display:", input$metadata_column_selector, "on", rv$selected_reduction, "\nError:", e$message), cex = 1.2)
-  })
-})
+setup_visualization_outputs(output, "visualize", rv, input)
 
 # Edit tab plots
-output$violin_plot_edit <- renderPlot({
-  VlnPlot(rv$sample, features = c(rv$gene), pt.size = 0) + NoLegend() + xlab("")
-})
-output$feature_plot_edit <- renderPlot({
-  tryCatch({
-    FeaturePlot(rv$sample, features = rv$gene, reduction = rv$selected_reduction, label = TRUE) + NoLegend()
-  }, error = function(e) {
-    plot.new()
-    text(0.5, 0.5, paste("Cannot display feature on", rv$selected_reduction, "\nError:", e$message), cex = 1.2)
-  })
-})
+setup_visualization_outputs(output, "edit", rv, input)
 
 # Differential Expression tab plots
-output$violin_plot_analyze <- renderPlot({
-  VlnPlot(rv$sample, features = c(rv$gene), pt.size = 0) + NoLegend() + xlab("")
+setup_visualization_outputs(output, "analyze", rv, input)
+
+# Update the selected tab when finding markers to show the results
+observeEvent(input$find_markers, {
+  updateTabsetPanel(session, "analyze_results_tabs", selected = "Differential Expression Results")
 })
-output$feature_plot_analyze <- renderPlot({
+
+observeEvent(input$find_all_markers, {
+  updateTabsetPanel(session, "analyze_results_tabs", selected = "Differential Expression Results")
+})
+
+observeEvent(input$compare_button, {
+  updateTabsetPanel(session, "analyze_results_tabs", selected = "Differential Expression Results")
+})
+
+# Select visualization tab when a gene in the markers table is clicked
+observeEvent(input$markers_table_cell_clicked, {
   tryCatch({
-    FeaturePlot(rv$sample, features = rv$gene, reduction = rv$selected_reduction, label = TRUE) + NoLegend()
+    info <- input$markers_table_cell_clicked
+    
+    # Validate the info object is not NULL and contains necessary fields
+    if (is.null(info) || is.null(info$col) || is.null(info$row)) {
+      return()
+    }
+    
+    # Check if we have valid markers data
+    if (is.null(rv$markers) || nrow(rv$markers) == 0) {
+      return()
+    }
+    
+    # Check column index validity
+    if (info$col == 0 && info$row >= 0 && info$row < nrow(rv$markers)) {
+      # Check if the gene/feature column exists
+      gene_col <- NULL
+      possible_gene_cols <- c("gene", "genes", "feature", "features", "Gene", "Features")
+      
+      for (col in possible_gene_cols) {
+        if (col %in% colnames(rv$markers)) {
+          gene_col <- col
+          break
+        }
+      }
+      
+      # If no gene column found, warn and exit
+      if (is.null(gene_col)) {
+        message("Warning: No gene/feature column found in markers data.frame")
+        return()
+      }
+      
+      # Get the gene from the table
+      gene_selected <- rv$markers[info$row + 1, gene_col]  # Adding 1 because DT indices are 0-based
+      
+      if (!is.null(gene_selected) && !is.na(gene_selected) && gene_selected != "") {
+        # Update the selected gene
+        rv$gene <- gene_selected
+        updateTextInput(session, "gene", value = gene_selected)
+        
+        # Switch to the visualization tab and set view to single gene
+        updateTabsetPanel(session, "analyze_results_tabs", selected = "Visualization")
+        updateTabsetPanel(session, "analyze_viz_tabs", selected = "Single Gene Visualization")
+      }
+    }
   }, error = function(e) {
-    plot.new()
-    text(0.5, 0.5, paste("Cannot display feature on", rv$selected_reduction, "\nError:", e$message), cex = 1.2)
+    message("Error in markers_table_cell_clicked handler: ", e$message)
   })
 })

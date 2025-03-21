@@ -3,13 +3,82 @@
 ### rename cluster ###
 
 observeEvent(input$rename_button, {
-  if (input$new_cluster_name != "") {
-    cells.use <- WhichCells(rv$sample, idents = input$cluster_name_selector)
-    rv$sample <- SetIdent(rv$sample, cells = cells.use, value = input$new_cluster_name)
-    rv$cluster_names <- levels(Idents(rv$sample))
-  } else {
-    showNotification("cannot be empty")
+  # Validate input
+  if (input$new_cluster_name == "") {
+    showNotification("New cluster name cannot be empty", type = "error")
+    return()
   }
+  
+  # Get selected clusters
+  selected_clusters <- input$cluster_name_selector
+  
+  # Validate that at least one cluster is selected
+  if (length(selected_clusters) == 0) {
+    showNotification("Please select at least one cluster to rename", type = "warning")
+    return()
+  }
+  
+  # Begin renaming process
+  withProgress(message = "Renaming clusters", detail = "Please wait...", value = 0, {
+    
+    # If only one cluster is selected, simple rename
+    if (length(selected_clusters) == 1) {
+      incProgress(0.3, detail = "Renaming cluster...")
+      
+      # Get cells from the selected cluster
+      cells.use <- WhichCells(rv$sample, idents = selected_clusters)
+      
+      # Set new identity
+      rv$sample <- SetIdent(rv$sample, cells = cells.use, value = input$new_cluster_name)
+      
+      showNotification(paste("Cluster", selected_clusters, "renamed to", input$new_cluster_name), type = "message")
+    } 
+    # Multiple clusters selected
+    else {
+      # Check if using numeric suffixes
+      add_suffix <- input$add_number_suffix
+      
+      for (i in seq_along(selected_clusters)) {
+        cluster <- selected_clusters[i]
+        incProgress(i / length(selected_clusters), detail = paste("Renaming cluster", cluster, "..."))
+        
+        # Get cells from this cluster
+        cells.use <- WhichCells(rv$sample, idents = cluster)
+        
+        # Create new name
+        if (add_suffix) {
+          new_name <- paste0(input$new_cluster_name, "_", i)
+        } else {
+          new_name <- input$new_cluster_name
+        }
+        
+        # Set new identity
+        rv$sample <- SetIdent(rv$sample, cells = cells.use, value = new_name)
+      }
+      
+      if (add_suffix) {
+        showNotification(
+          paste("Renamed", length(selected_clusters), "clusters to", input$new_cluster_name, "with numeric suffixes"),
+          type = "message"
+        )
+      } else {
+        showNotification(
+          paste("Renamed", length(selected_clusters), "clusters to", input$new_cluster_name),
+          type = "message"
+        )
+      }
+    }
+    
+    # Update cluster names
+    rv$cluster_names <- levels(Idents(rv$sample))
+    
+    # Update all cluster selectors
+    updatePickerInput(session, "cluster_name_selector", choices = rv$cluster_names)
+    updatePickerInput(session, "delete_cluster_selector", choices = rv$cluster_names)
+    updateSelectInput(session, "cluster_name_selector_analyze", choices = rv$cluster_names)
+    updateSelectInput(session, "first_cluster_name_selector", choices = rv$cluster_names)
+    updateSelectInput(session, "second_cluster_name_selector", choices = rv$cluster_names)
+  })
 })
 
 ### backup cluster names ###
@@ -43,7 +112,8 @@ observeEvent(input$restore_cluster_button, {
       rv$cluster_names <- levels(Idents(rv$sample))
       
       # Update cluster selectors
-      updateSelectInput(session, "cluster_name_selector", choices = rv$cluster_names)
+      updatePickerInput(session, "cluster_name_selector", choices = rv$cluster_names)
+      updatePickerInput(session, "delete_cluster_selector", choices = rv$cluster_names)
       updateSelectInput(session, "cluster_name_selector_analyze", choices = rv$cluster_names)
       updateSelectInput(session, "first_cluster_name_selector", choices = rv$cluster_names)
       updateSelectInput(session, "second_cluster_name_selector", choices = rv$cluster_names)

@@ -164,7 +164,7 @@ update_cluster_ui <- function() {
   rv$cluster_names <- levels(Idents(rv$sample))
   
   # Update cluster selectors
-  updateSelectInput(session, "cluster_name_selector", choices = rv$cluster_names)
+  updatePickerInput(session, "cluster_name_selector", choices = rv$cluster_names)
   updatePickerInput(session, "delete_cluster_selector", choices = rv$cluster_names)
   updateSelectInput(session, "cluster_name_selector_analyze", choices = rv$cluster_names)
   updateSelectInput(session, "first_cluster_name_selector", choices = rv$cluster_names)
