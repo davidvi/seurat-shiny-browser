@@ -7,6 +7,7 @@ server <- function(input, output, session) {
     sample_name = sample_name,
     cluster_names = cluster_names,
     gene = "CSF1R",
+    multiple_genes = c("CSF1R", "MS4A1", "CD79A"),
     all_rds_files = all_rds_files,
     current_folder = ".",
     all_folders = all_folders,

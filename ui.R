@@ -21,7 +21,7 @@ ui <- fluidPage(
   titlePanel("Single Cell Data Explorer"),
   h4(textOutput("sample_name")),
   tabsetPanel(
-    id = "tabs",
+    id = "main_tabs",
     load_save_tab(),
     visualize_tab(),
     edit_tab(),

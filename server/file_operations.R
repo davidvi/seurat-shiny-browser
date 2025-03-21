@@ -1,5 +1,58 @@
 # File operations module
 
+### Helper functions for raw data loading ###
+
+# Function to check if a directory is a valid 10X Genomics data directory
+is_valid_10x_dir <- function(dir_path) {
+  # Check for matrix.mtx file (may be .gz compressed)
+  has_matrix <- any(grepl("matrix\\.mtx(\\.gz)?$", list.files(dir_path, recursive = TRUE)))
+  
+  # Check for barcodes.tsv file (may be .gz compressed)
+  has_barcodes <- any(grepl("barcodes\\.tsv(\\.gz)?$", list.files(dir_path, recursive = TRUE)))
+  
+  # Check for genes.tsv or features.tsv (may be .gz compressed)
+  has_genes <- any(grepl("(genes|features)\\.tsv(\\.gz)?$", list.files(dir_path, recursive = TRUE)))
+  
+  # Return TRUE if all required files are present
+  return(has_matrix && has_barcodes && has_genes)
+}
+
+# Function to find all subdirectories in a given folder that contain 10X data
+find_10x_dirs <- function(parent_dir) {
+  if(!dir.exists(parent_dir)) {
+    return(character(0))
+  }
+  
+  # Get all subdirectories (just one level deep for performance)
+  all_subdirs <- list.dirs(parent_dir, full.names = TRUE, recursive = FALSE)
+  
+  # Filter for valid 10X directories
+  valid_10x_dirs <- all_subdirs[sapply(all_subdirs, is_valid_10x_dir)]
+  
+  # Return relative paths
+  return(basename(valid_10x_dirs))
+}
+
+# Function to calculate percentage of mitochondrial genes
+calculate_mt_percent <- function(seurat_obj) {
+  tryCatch({
+    # Get genes starting with MT- (mitochondrial genes)
+    mt_genes <- grep("^MT-", rownames(seurat_obj@assays$RNA), value = TRUE)
+    
+    if(length(mt_genes) > 0) {
+      seurat_obj[["percent.mt"]] <- PercentageFeatureSet(seurat_obj, pattern = "^MT-")
+      message("Calculated mitochondrial percentage for ", length(mt_genes), " genes")
+    } else {
+      message("No mitochondrial genes found with pattern '^MT-'")
+    }
+    
+    return(seurat_obj)
+  }, error = function(e) {
+    message("Error calculating mitochondrial percentage: ", e$message)
+    return(seurat_obj)
+  })
+}
+
 ### select folder ###
 
 observeEvent(input$folder_selector, {
@@ -65,6 +118,10 @@ observeEvent(input$load_button, {
       rv$selected_reduction <- "umap"
     })
     
+    # Update the multiple genes text area with default genes
+    updateTextAreaInput(session, "multi_gene_input", 
+                       value = paste(rv$multiple_genes, collapse = "\n"))
+    
     # Update available metadata columns
     tryCatch({
       if(!is.null(rv$sample)) {
@@ -78,6 +135,142 @@ observeEvent(input$load_button, {
       updateSelectInput(session, "metadata_column_selector", choices = rv$metadata_columns)
     })
     incProgress(0.9, "Done")
+  })
+})
+
+### Raw data 10X loading ###
+
+# Dynamic UI for raw data subdirectories
+output$raw_data_subdirs <- renderUI({
+  req(input$raw_data_parent_folder)
+  
+  # Get the full path of the parent folder
+  parent_path <- file.path(base_folder, input$raw_data_parent_folder)
+  
+  # Find subdirectories that contain 10X data
+  valid_dirs <- find_10x_dirs(parent_path)
+  
+  if(length(valid_dirs) == 0) {
+    div(
+      style = "color: #856404; background-color: #fff3cd; padding: 10px; border-radius: 4px; margin-top: 10px;",
+      icon("exclamation-triangle"), 
+      "No valid 10X Genomics data directories found. Each directory should contain matrix.mtx, genes.tsv/features.tsv, and barcodes.tsv files."
+    )
+  } else {
+    selectInput(
+      inputId = "raw_data_subdir",
+      label = "Select 10X Data Directory:",
+      choices = valid_dirs,
+      selected = if(length(valid_dirs) > 0) valid_dirs[1] else NULL
+    )
+  }
+})
+
+# Observer for parent folder change to scan for 10X data dirs
+observeEvent(input$raw_data_parent_folder, {
+  # When parent folder changes, ensure the UI updates
+  invalidateLater(100)
+})
+
+# Load Raw 10X Data button handler
+observeEvent(input$load_raw_button, {
+  # Validate required inputs
+  req(input$raw_data_parent_folder, input$raw_data_subdir, input$project_name)
+  
+  # Full path to the 10X data directory
+  data_dir <- file.path(base_folder, input$raw_data_parent_folder, input$raw_data_subdir)
+  
+  # Validate directory exists and contains valid data
+  if(!dir.exists(data_dir) || !is_valid_10x_dir(data_dir)) {
+    showNotification(
+      "Invalid 10X Genomics data directory. Make sure it contains matrix.mtx, genes.tsv/features.tsv, and barcodes.tsv files.",
+      type = "error"
+    )
+    return()
+  }
+  
+  # Get parameters
+  project_name <- input$project_name
+  min_cells <- input$min_cells
+  min_features <- input$min_features
+  calc_mt <- input$calc_mt_percent
+  
+  withProgress(message = "Loading 10X data...", value = 0, {
+    tryCatch({
+      # Step 1: Read in the 10X data
+      incProgress(0.1, detail = "Reading 10X data matrix")
+      counts_data <- Read10X(data.dir = data_dir)
+      
+      # Step 2: Create Seurat object
+      incProgress(0.3, detail = "Creating Seurat object")
+      seurat_obj <- CreateSeuratObject(
+        counts = counts_data, 
+        project = project_name, 
+        min.cells = min_cells, 
+        min.features = min_features
+      )
+      
+      # Step 3: Add mitochondrial percentage if requested
+      if(calc_mt) {
+        incProgress(0.6, detail = "Calculating mitochondrial percentage")
+        seurat_obj <- calculate_mt_percent(seurat_obj)
+      }
+      
+      # Step 4: Update the sample in reactive values
+      incProgress(0.8, detail = "Finalizing")
+      rv$sample <- seurat_obj
+      rv$sample_name <- paste0(input$raw_data_parent_folder, "/", input$raw_data_subdir, " (unsaved)")
+      
+      # Set cluster names to empty since the data hasn't been clustered yet
+      rv$cluster_names <- c()
+      updatePickerInput(session, "delete_cluster_selector", choices = rv$cluster_names)
+      
+      # Clear previously computed markers
+      rv$markers <- NULL
+      
+      # Step 5: Update available reductions (likely none for raw data)
+      reductions_list <- c()
+      tryCatch({
+        reductions_list <- Reductions(seurat_obj)
+      }, error = function(e) {
+        # No reductions available in raw data
+      })
+      
+      if(length(reductions_list) > 0) {
+        updateSelectInput(session, "reduction_selector", choices = reductions_list)
+        rv$selected_reduction <- reductions_list[1]
+      } else {
+        # No dimensional reductions yet for raw data
+        updateSelectInput(session, "reduction_selector", choices = c("No reductions available"))
+        rv$selected_reduction <- NULL
+      }
+      
+      # Update available metadata columns
+      if(!is.null(seurat_obj)) {
+        metadata_cols <- colnames(seurat_obj@meta.data)
+        rv$metadata_columns <- c("ident", metadata_cols)
+        updateSelectInput(session, "metadata_column_selector", choices = rv$metadata_columns)
+      }
+      
+      incProgress(1.0, detail = "Loading complete")
+      
+      # Provide success notification
+      cells_loaded <- ncol(seurat_obj)
+      features_loaded <- nrow(seurat_obj)
+      showNotification(
+        paste("Successfully loaded 10X data with", cells_loaded, "cells and", features_loaded, "features."),
+        type = "message"
+      )
+      
+      # Switch to the Normalize/Cluster tab, since that's the next logical step for raw data
+      updateTabsetPanel(session, "main_tabs", selected = "Normalize/Cluster")
+      
+    }, error = function(e) {
+      showNotification(
+        paste("Error loading 10X data:", e$message),
+        type = "error"
+      )
+    })
   })
 })
 
