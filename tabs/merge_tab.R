@@ -1,6 +1,6 @@
 merge_tab <- function() {
   tabPanel(
-    title = "Merge",
+    title = "Integrate Samples",
     h3("Merge and Integrate Samples"),
     
     fluidRow(

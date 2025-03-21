@@ -26,7 +26,6 @@ server <- function(input, output, session) {
   source("server/merge_integration.R", local = TRUE)
   source("server/visualizations.R", local = TRUE)
   source("server/ui_updates.R", local = TRUE)
-  source("server/clustering.R", local = TRUE)
   
   # Sample name output - shared across tabs
   output$sample_name <- renderText({

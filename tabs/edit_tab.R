@@ -16,12 +16,34 @@ edit_tab <- function() {
         ),
         actionButton("rename_button", "Rename cluster"),
         hr(),
-        h3("Other cluster operations"),
+        h3("Backup/restore cluster names"),
         fluidRow(
           column(6, actionButton("backup_cluster_button", "Backup cluster names")),
           column(6, actionButton("restore_cluster_button", "Restore cluster names"))
         ),
-        p("Backup saves identities to 'idents.backup'. Restore sets identities from 'idents.backup'.")
+        p("Backup saves identities to 'idents.backup'. Restore sets identities from 'idents.backup'."),
+        hr(),
+        h3("Delete clusters"),
+        pickerInput(
+          inputId = "delete_cluster_selector",
+          label = "Select clusters to delete:",
+          choices = cluster_names,
+          multiple = TRUE,
+          options = list(
+            `actions-box` = TRUE,
+            `selected-text-format` = "count > 2"
+          )
+        ),
+        div(
+          style = "margin-bottom: 15px;",
+          checkboxInput(
+            inputId = "confirm_delete_cluster",
+            label = "I understand this will permanently remove these cells",
+            value = FALSE
+          )
+        ),
+        actionButton("delete_cluster_button", "Delete selected clusters", 
+                    class = "btn-danger")
       ),
       column(8,
         h3("Cluster visualization"),

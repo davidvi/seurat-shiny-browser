@@ -37,6 +37,7 @@ COPY ui.R /home/shiny-app/ui.R
 COPY server.R /home/shiny-app/server.R
 COPY app.R /home/shiny-app/app.R
 COPY tabs/*.R /home/shiny-app/tabs/
+COPY server/*.R /home/shiny-app/server/
 
 # Expose port
 EXPOSE 3030

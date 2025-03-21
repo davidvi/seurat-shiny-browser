@@ -4,6 +4,7 @@ source("tabs/visualize_tab.R")
 source("tabs/edit_tab.R")
 source("tabs/analyze_tab.R")
 source("tabs/merge_tab.R")
+source("tabs/cluster_tab.R")
 
 # UI
 jsCode <- "
@@ -25,6 +26,7 @@ ui <- fluidPage(
     visualize_tab(),
     edit_tab(),
     analyze_tab(),
-    merge_tab()
+    merge_tab(),
+    cluster_tab()
   )
 )
