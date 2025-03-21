@@ -62,6 +62,39 @@ load_save_tab <- function() {
           
           hr(),
           
+          h3("Move Files"),
+          div(
+            style = "background-color: #f8f9fa; padding: 15px; border-radius: 4px; border-left: 4px solid #17a2b8;",
+            p("Select files to move to another folder"),
+            
+            # Multi-select files to move
+            pickerInput(
+              inputId = "move_files_selector",
+              label = "Select Files to Move:",
+              choices = all_rds_files,
+              multiple = TRUE,
+              options = list(
+                `actions-box` = TRUE,
+                `selected-text-format` = "count > 2"
+              )
+            ),
+            
+            # Target folder selector
+            selectInput(
+              inputId = "move_target_folder",
+              label = "Target Folder:",
+              choices = all_folders
+            ),
+            
+            actionButton(
+              inputId = "move_files_button",
+              label = "Move Selected Files",
+              class = "btn-info"
+            )
+          ),
+          
+          hr(),
+          
           h3("Delete Sample"),
           div(
             style = "background-color: #ffeeee; padding: 15px; border-radius: 4px; border-left: 4px solid #dc3545;",
