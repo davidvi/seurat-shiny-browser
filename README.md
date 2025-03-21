@@ -173,28 +173,39 @@ The app works with two types of data:
   - Cluster identification with adjustable parameters
   - Dimensional reduction (UMAP)
 
-### Custom Data Location
+### Custom Data Location and Port
 
-You can specify a custom data directory either through Docker or direct execution:
+You can specify a custom data directory and port either through Docker or direct execution:
 
 - **With Docker**:
 
 ```bash
+# Default port (3030)
 ./run.sh /path/to/your/data
+
+# Custom port
+./run.sh /path/to/your/data 8080
 ```
 
 - **Direct with R**:
 
 ```bash
+# Default port (3030)
 Rscript app.R /path/to/your/data
+
+# Custom port
+Rscript app.R /path/to/your/data 8080
 ```
+
+If you change the port, make sure to access the application at the correct URL (e.g., `http://localhost:8080` if you specified port 8080).
 
 ## Troubleshooting
 
 ### Common Issues
 
 1. **App fails to start**:
-   - Ensure port 3030 is not in use by another application
+   - Ensure the default port (3030) is not in use by another application
+   - If you encounter a port conflict, you can specify a different port using the second command line argument
    - Check R and package versions are compatible
 
 2. **No folders or files appear**:
