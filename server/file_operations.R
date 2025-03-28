@@ -548,7 +548,7 @@ observeEvent(input$save_button, {
     save_path <- paste0(folder_path, file_name)
     
     message("DEBUG: Saving to ", save_path)
-    saveRDS(rv$sample, file = save_path)
+    write_rds(rv$sample, file = save_path)
     
     incProgress(0.8, "Setting new name")
     
