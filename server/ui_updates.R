@@ -11,6 +11,12 @@ observe({
   # Update the delete cluster selector (using pickerInput)
   updatePickerInput(session, "delete_cluster_selector", choices = rv$cluster_names)
   
+  # Update orig.ident selector with unique values from orig.ident
+  if(!is.null(rv$sample) && "orig.ident" %in% colnames(rv$sample@meta.data)) {
+    orig_ident_values <- unique(rv$sample$orig.ident)
+    updateSelectInput(session, "orig_ident_selector", choices = orig_ident_values)
+  }
+  
   # Ensure metadata column selector is updated
   if(!is.null(rv$sample)) {
     metadata_cols <- colnames(rv$sample@meta.data)

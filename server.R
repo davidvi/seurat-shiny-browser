@@ -16,7 +16,8 @@ server <- function(input, output, session) {
     metadata_columns = if(!is.null(sample)) colnames(sample@meta.data) else c("ident"),
     merge_complete = FALSE,
     merge_log = "",
-    integrated_reduction = ""
+    integrated_reduction = "",
+    force_refresh = 0 # Used to force visualization updates
   )
   
   # Source all server modules

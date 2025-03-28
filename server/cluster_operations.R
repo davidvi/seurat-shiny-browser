@@ -81,6 +81,83 @@ observeEvent(input$rename_button, {
   })
 })
 
+### rename orig.ident ###
+
+observeEvent(input$rename_orig_ident_button, {
+  # Validate inputs
+  req(rv$sample)
+  
+  # Check if orig.ident column exists
+  if (!("orig.ident" %in% colnames(rv$sample@meta.data))) {
+    showNotification("This Seurat object does not have an orig.ident column", type = "error")
+    return()
+  }
+  
+  # Get selected orig.ident value
+  selected_orig_ident <- input$orig_ident_selector
+  
+  # Get new orig.ident name
+  new_orig_ident <- input$new_orig_ident
+  
+  # Validate new name
+  if (is.null(new_orig_ident) || new_orig_ident == "") {
+    showNotification("New orig.ident name cannot be empty", type = "error")
+    return()
+  }
+  
+  # Start the renaming process
+  withProgress(message = "Renaming orig.ident", detail = "Please wait...", value = 0, {
+    tryCatch({
+      # Get current unique values before the change
+      original_values <- unique(as.character(rv$sample$orig.ident))
+      
+      # Identify cells with the selected orig.ident value
+      cells_to_rename <- rownames(rv$sample@meta.data)[rv$sample$orig.ident == selected_orig_ident]
+      
+      if (length(cells_to_rename) == 0) {
+        showNotification("No cells found with the selected orig.ident value", type = "warning")
+        return()
+      }
+      
+      incProgress(0.3, detail = paste("Renaming", length(cells_to_rename), "cells..."))
+      
+      # First convert to character to avoid factor issues
+      rv$sample$orig.ident <- as.character(rv$sample$orig.ident)
+      
+      # Replace the orig.ident values for the selected cells
+      rv$sample$orig.ident[cells_to_rename] <- new_orig_ident
+      
+      # Get the new unique values after replacement
+      new_unique_values <- unique(rv$sample$orig.ident)
+      
+      # Convert back to factor with explicit levels
+      rv$sample$orig.ident <- factor(rv$sample$orig.ident, levels = new_unique_values)
+      
+      # Force regenerate any dependent reduction plots
+      if ("DimPlot" %in% names(rv$sample@misc)) {
+        rv$sample@misc$DimPlot <- NULL
+      }
+      
+      incProgress(0.8, detail = "Updating UI...")
+      
+      # Update the orig.ident selector with the new set of unique values
+      updateSelectInput(session, "orig_ident_selector", choices = levels(rv$sample$orig.ident))
+      
+      # Force a refresh of any visualization that might use this metadata
+      rv$force_refresh <- runif(1) # Random value to trigger reactivity
+      
+      # Show success notification
+      showNotification(
+        paste("Successfully renamed orig.ident from", selected_orig_ident, "to", new_orig_ident, 
+              "for", length(cells_to_rename), "cells"),
+        type = "message"
+      )
+    }, error = function(e) {
+      showNotification(paste("Error renaming orig.ident:", e$message), type = "error")
+    })
+  })
+})
+
 ### backup cluster names ###
 
 observeEvent(input$backup_cluster_button, {

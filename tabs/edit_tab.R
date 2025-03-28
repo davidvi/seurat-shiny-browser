@@ -65,6 +65,20 @@ edit_tab <- function() {
             actionButton("delete_cluster_button", "Delete selected clusters", 
                         class = "btn-danger")
           )
+        ),
+        wellPanel(
+          h3("Edit orig.ident"),
+          selectInput(
+            inputId = "orig_ident_selector",
+            label = "Select orig.ident value to rename:",
+            choices = NULL
+          ),
+          textInput(
+            inputId = "new_orig_ident",
+            label = "Rename to:",
+            value = ""
+          ),
+          actionButton("rename_orig_ident_button", "Rename orig.ident", class = "btn-primary")
         )
       ),
       column(8,

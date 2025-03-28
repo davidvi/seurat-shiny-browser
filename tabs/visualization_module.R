@@ -126,6 +126,9 @@ create_dot_plot_output <- function(output, id, rv, input) {
 
 create_dim_plot_output <- function(output, id, rv, input) {
   output[[id]] <- renderPlot({
+    # Add dependency on force_refresh to redraw when needed
+    force_refresh_val <- rv$force_refresh
+    
     if(is.null(rv$sample)) {
       plot.new()
       text(0.5, 0.5, "No sample loaded", cex = 1.2)
@@ -140,6 +143,19 @@ create_dim_plot_output <- function(output, id, rv, input) {
         # Check if the selected metadata is continuous or categorical
         meta_values <- rv$sample@meta.data[[input$metadata_column_selector]]
         
+        if (is.null(meta_values) || length(meta_values) == 0) {
+          plot.new()
+          text(0.5, 0.5, paste("Metadata column", input$metadata_column_selector, "is empty"), cex = 1.2)
+          return()
+        }
+        
+        # Ensure factors have at least one level
+        if (is.factor(meta_values) && length(levels(meta_values)) == 0) {
+          # Convert to character and back to factor to ensure it has proper levels
+          meta_values <- factor(as.character(meta_values))
+          rv$sample@meta.data[[input$metadata_column_selector]] <- meta_values
+        }
+        
         # If it's numeric and has more than a few unique values, treat as continuous
         if(is.numeric(meta_values) && length(unique(meta_values)) > 10) {
           # For continuous data, use FeaturePlot
@@ -147,7 +163,7 @@ create_dim_plot_output <- function(output, id, rv, input) {
                     features = input$metadata_column_selector, 
                     reduction = rv$selected_reduction)
         } else {
-          # For categorical data, use DimPlot
+          # For categorical data, use DimPlot with error handling for empty factors
           DimPlot(rv$sample, 
                  reduction = rv$selected_reduction, 
                  group.by = input$metadata_column_selector)
