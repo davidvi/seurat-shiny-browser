@@ -1,6 +1,9 @@
 # Parse command-line arguments
 args <- commandArgs(trailingOnly = TRUE)
 
+# increase max global size
+options(future.globals.maxSize = 10000 * 1024^2) # Set to ~10GB
+
 # Set the data folder path and port
 # Default is "/home/shiny-app/data/" and port 3030
 # Can be overridden with command-line arguments
