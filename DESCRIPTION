@@ -35,6 +35,8 @@ Imports:
     future (>= 1.30.0),
     sp (>= 1.5.0)
 Suggests:
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    SingleR,
+    celldex
 Config/testthat/edition: 3
 

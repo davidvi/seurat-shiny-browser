@@ -5,6 +5,7 @@ source("tabs/edit_tab.R")
 source("tabs/analyze_tab.R")
 source("tabs/merge_tab.R")
 source("tabs/cluster_tab.R")
+source("tabs/auto_name_tab.R")
 
 # UI
 jsCode <- "
@@ -27,6 +28,7 @@ ui <- fluidPage(
     edit_tab(),
     analyze_tab(),
     merge_tab(),
-    cluster_tab()
+    cluster_tab(),
+    auto_name_tab()
   )
 )

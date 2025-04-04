@@ -31,9 +31,6 @@ if (length(args) >= 2 && !is.na(args[2]) && as.integer(args[2]) > 0) {
   message("Using default port: ", port)
 }
 
-# Source the run_seurat_browser function
-source("R/run_seurat_browser.R")
-
 # Set options for the app
 options(future.globals.maxSize = 10000 * 1024^2) # Set to ~10GB
 options(seurat_browser_data_folder = data_folder)
@@ -41,15 +38,46 @@ options(seurat_browser_data_folder = data_folder)
 # Load necessary libraries
 library(shiny)
 library(Seurat)
+library(SeuratObject)
 library(shinyWidgets)
 library(shinyjs)
 library(ggplot2)
-library(tidyverse)
+library(dplyr)
+library(tidyr)
 library(DT)
 library(future)
 library(readxl)
 
+# Try to load SingleR and celldex if they are installed
+tryCatch({
+  suppressWarnings(library(SingleR))
+  message("SingleR loaded successfully")
+}, error = function(e) {
+  message("SingleR package not found. Auto Name tab functionality will be limited.")
+  message("To install SingleR: BiocManager::install('SingleR')")
+})
+
+tryCatch({
+  suppressWarnings(library(celldex))
+  message("celldex loaded successfully")
+}, error = function(e) {
+  message("celldex package not found. Auto Name tab functionality will be limited.")
+  message("To install celldex: BiocManager::install('celldex')")
+})
+
+# Load BiocParallel if available
+tryCatch({
+  suppressWarnings(library(BiocParallel))
+  message("BiocParallel loaded successfully")
+}, error = function(e) {
+  message("BiocParallel package not found. Consider installing it for better performance.")
+})
+
+# Define direct path to the Shiny app directory
+app_dir <- file.path(getwd(), "inst", "shiny-app")
+message("Running app directly from: ", app_dir)
+
 # Run the app in development mode with the specified port
 message("Starting Seurat Shiny Browser on port: ", port)
 message("You can access the app at: http://localhost:", port)
-run_seurat_browser(data_folder = data_folder, port = port, launch.browser = TRUE)
+shiny::runApp(app_dir, port = port, launch.browser = FALSE, host = "0.0.0.0")
