@@ -97,14 +97,16 @@ The run.sh script accepts three optional parameters:
 
 #### Prerequisites
 
-- R (version ≥ 4.0.0)
+- R (version ≥ 4.2.0)
 - Required R packages:
-  - Seurat (≥ 4.3.0)
+  - Seurat (≥ 5.0.0)
+  - SeuratObject (≥ 5.0.0)
   - shiny
   - shinyWidgets
   - shinyjs
   - ggplot2
-  - tidyverse
+  - magrittr
+  - dplyr, tidyr, and other tidyverse packages
   - DT
   - future
   - readxl
@@ -122,21 +124,24 @@ cd seurat-shiny-browser
 2. Install required packages:
 
 ```R
-install.packages(c("shiny", "shinyWidgets", "shinyjs", "ggplot2", "tidyverse", "DT", "future", "readxl"))
+install.packages(c("shiny", "shinyWidgets", "shinyjs", "ggplot2", "magrittr", 
+                   "dplyr", "tidyr", "purrr", "stringr", "readr", "forcats",
+                   "DT", "future", "readxl", "tibble", "lubridate"))
 install.packages("BiocManager")
-BiocManager::install(c("preprocessCore", "Seurat"))
+BiocManager::install("preprocessCore")
+install.packages("Seurat")
 ```
 
 3. Run the application:
 
 ```bash
-# Method 1: Use dev_run.R with command-line arguments (RECOMMENDED)
-Rscript dev_run.R /path/to/your/data         # Specify data folder
-Rscript dev_run.R /path/to/your/data 8080    # Specify data folder and port
-Rscript dev_run.R                            # Use default data folder (./data)
+# Method 1: Use R/dev/dev_run.R with command-line arguments (RECOMMENDED)
+Rscript R/dev/dev_run.R /path/to/your/data         # Specify data folder
+Rscript R/dev/dev_run.R /path/to/your/data 8080    # Specify data folder and port
+Rscript R/dev/dev_run.R                            # Use default data folder (./data)
 
-# Method 2: Run directly with run_seurat_browser.R
-Rscript -e "library(shiny); library(Seurat); library(shinyWidgets); library(shinyjs); library(ggplot2); library(tidyverse); library(DT); library(future); library(readxl); source('R/run_seurat_browser.R'); run_seurat_browser(data_folder = '/path/to/your/data', port = 3030)"
+# Method 2: Run directly with the package functions
+Rscript -e "devtools::load_all(); run_seurat_browser(data_folder = '/path/to/your/data', port = 3030)"
 ```
 
 4. Access the application in your browser at:
