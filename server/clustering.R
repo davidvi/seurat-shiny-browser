@@ -226,7 +226,7 @@ observeEvent(input$run_qc, {
       
       # Check if we still have cells
       if(ncol(rv$sample) == 0) {
-        showNotification("QC filtering removed all cells. Try less stringent parameters.", type = "error")
+        showNotification("QC filtering removed all cells. Try less stringent parameters.", type = "error", duration = 10)
         rv$sample <- original_sample
         return()
       }
@@ -239,11 +239,12 @@ observeEvent(input$run_qc, {
       
       showNotification(
         paste0("QC filtering complete. Kept ", ncol(rv$sample), " cells."),
-        type = "message"
+        type = "message",
+        duration = 10
       )
     }, error = function(e) {
       rv$sample <- original_sample
-      showNotification(paste("Error in QC filtering:", e$message), type = "error")
+      showNotification(paste("Error in QC filtering:", e$message), type = "error", duration = 10)
     })
   })
 })
@@ -541,7 +542,7 @@ observeEvent(input$run_all_steps, {
       
       # Check if we still have cells
       if(ncol(rv$sample) == 0) {
-        showNotification("QC filtering removed all cells. Try less stringent parameters.", type = "error")
+        showNotification("QC filtering removed all cells. Try less stringent parameters.", type = "error", duration = 10)
         rv$sample <- original_sample
         return()
       }

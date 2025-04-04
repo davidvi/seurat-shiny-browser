@@ -268,7 +268,8 @@ observeEvent(input$load_raw_button, {
     }, error = function(e) {
       showNotification(
         paste("Error loading 10X data:", e$message),
-        type = "error"
+        type = "error",
+        duration = 10
       )
     })
   })
@@ -319,13 +320,13 @@ observeEvent(input$create_folder_button, {
   
   # Validate folder name
   if (is.null(new_folder_name) || new_folder_name == "") {
-    showNotification("Folder name cannot be empty", type = "error")
+    showNotification("Folder name cannot be empty", type = "error", duration = 10)
     return()
   }
   
   # Check if folder name contains invalid characters
   if (grepl("[\\/:*?\"<>|]", new_folder_name)) {
-    showNotification("Folder name contains invalid characters", type = "error")
+    showNotification("Folder name contains invalid characters", type = "error", duration = 10)
     return()
   }
   
@@ -334,7 +335,7 @@ observeEvent(input$create_folder_button, {
   
   # Check if folder already exists
   if (dir.exists(folder_path)) {
-    showNotification(paste("Folder", new_folder_name, "already exists"), type = "warning")
+    showNotification(paste("Folder", new_folder_name, "already exists"), type = "warning", duration = 10)
     return()
   }
   
@@ -355,9 +356,9 @@ observeEvent(input$create_folder_button, {
     # Clear the folder name input
     updateTextInput(session, "new_folder_name", value = "")
     
-    showNotification(paste("Folder", new_folder_name, "created successfully"), type = "message")
+    showNotification(paste("Folder", new_folder_name, "created successfully"), type = "message", duration = 10)
   }, error = function(e) {
-    showNotification(paste("Error creating folder:", e$message), type = "error")
+    showNotification(paste("Error creating folder:", e$message), type = "error", duration = 10)
   })
 })
 
@@ -371,25 +372,25 @@ observeEvent(input$move_files_button, {
   
   # Validate inputs
   if (is.null(selected_files) || length(selected_files) == 0) {
-    showNotification("No files selected for moving", type = "warning")
+    showNotification("No files selected for moving", type = "warning", duration = 10)
     return()
   }
   
   if (is.null(target_folder) || target_folder == "") {
-    showNotification("No target folder selected", type = "error")
+    showNotification("No target folder selected", type = "error", duration = 10)
     return()
   }
   
   # Check if target folder is the same as current folder
   if (target_folder == rv$current_folder) {
-    showNotification("Cannot move files to the same folder", type = "warning")
+    showNotification("Cannot move files to the same folder", type = "warning", duration = 10)
     return()
   }
   
   # Check if target folder exists
   target_path <- file.path(base_folder, target_folder)
   if (!dir.exists(target_path)) {
-    showNotification(paste("Target folder", target_folder, "does not exist"), type = "error")
+    showNotification(paste("Target folder", target_folder, "does not exist"), type = "error", duration = 10)
     return()
   }
   
@@ -435,7 +436,7 @@ observeEvent(input$move_files_button, {
         # Check if the file to move is the currently loaded sample
         if (!is.null(rv$sample_name) && (paste0(rv$current_folder, "/", file_name) == rv$sample_name)) {
           failed_moves <- c(failed_moves, file_name)
-          showNotification("Cannot move the currently loaded sample", type = "error")
+          showNotification("Cannot move the currently loaded sample", type = "error", duration = 10)
           next
         }
         
@@ -460,11 +461,11 @@ observeEvent(input$move_files_button, {
     
     # Display completion notification
     if (success_count > 0) {
-      showNotification(paste(success_count, "files moved successfully"), type = "message")
+      showNotification(paste(success_count, "files moved successfully"), type = "message", duration = 10)
     }
     
     if (length(failed_moves) > 0) {
-      showNotification(paste("Failed to move", length(failed_moves), "files"), type = "warning")
+      showNotification(paste("Failed to move", length(failed_moves), "files"), type = "warning", duration = 10)
     }
   })
 })
@@ -473,7 +474,7 @@ observeEvent(input$move_files_button, {
 observeEvent(input$delete_sample_button, {
   # Check if deletion is confirmed
   if (!input$confirm_delete_sample) {
-    showNotification("Please confirm deletion by checking the confirmation box", type = "warning")
+    showNotification("Please confirm deletion by checking the confirmation box", type = "warning", duration = 10)
     return()
   }
   
@@ -482,7 +483,7 @@ observeEvent(input$delete_sample_button, {
   
   # Validate file name
   if (is.null(file_to_delete) || file_to_delete == "") {
-    showNotification("No file selected for deletion", type = "error")
+    showNotification("No file selected for deletion", type = "error", duration = 10)
     return()
   }
   
@@ -491,7 +492,7 @@ observeEvent(input$delete_sample_button, {
   
   # Check if file exists
   if (!file.exists(file_path)) {
-    showNotification(paste("File", file_to_delete, "does not exist"), type = "error")
+    showNotification(paste("File", file_to_delete, "does not exist"), type = "error", duration = 10)
     return()
   }
   
@@ -499,7 +500,7 @@ observeEvent(input$delete_sample_button, {
   tryCatch({
     # Check if the file to delete is the currently loaded sample
     if (!is.null(rv$sample_name) && (paste0(rv$current_folder, "/", file_to_delete) == rv$sample_name)) {
-      showNotification("Cannot delete the currently loaded sample", type = "error")
+      showNotification("Cannot delete the currently loaded sample", type = "error", duration = 10)
       return()
     }
     
@@ -511,9 +512,9 @@ observeEvent(input$delete_sample_button, {
     # Reset the confirmation checkbox
     updateCheckboxInput(session, "confirm_delete_sample", value = FALSE)
     
-    showNotification(paste("File", file_to_delete, "deleted successfully"), type = "message")
+    showNotification(paste("File", file_to_delete, "deleted successfully"), type = "message", duration = 10)
   }, error = function(e) {
-    showNotification(paste("Error deleting file:", e$message), type = "error")
+    showNotification(paste("Error deleting file:", e$message), type = "error", duration = 10)
   })
 })
 
@@ -560,6 +561,6 @@ observeEvent(input$save_button, {
     incProgress(0.9, "Done")
     
     # Display success notification
-    showNotification(paste("File saved as", file_name), type = "message")
+    showNotification(paste("File saved as", file_name), type = "message", duration = 10)
   })
 })

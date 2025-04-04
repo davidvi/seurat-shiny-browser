@@ -62,7 +62,7 @@ output$integrated_umap_plot <- renderPlot({
 observeEvent(input$merge_button, {
   # Validate we have at least 2 samples selected
   if(is.null(input$merge_files_selector) || length(input$merge_files_selector) < 2) {
-    showNotification("Please select at least two samples to merge.", type = "error")
+    showNotification("Please select at least two samples to merge.", type = "error", duration = 10)
     return()
   }
   
@@ -88,14 +88,14 @@ observeEvent(input$merge_button, {
         rv$merge_log <- paste0(rv$merge_log, "Successfully loaded ", file_name, "\n")
       } else {
         rv$merge_log <- paste0(rv$merge_log, "Failed to load ", file_name, "\n")
-        showNotification(paste("Failed to load", file_name), type = "error")
+        showNotification(paste("Failed to load", file_name), type = "error", duration = 10)
       }
     }
     
     # Check if we have at least 2 objects to merge
     if(length(seurat_objects) < 2) {
       rv$merge_log <- paste0(rv$merge_log, "Error: Need at least 2 valid Seurat objects to merge.\n")
-      showNotification("Failed to load enough valid Seurat objects.", type = "error")
+      showNotification("Failed to load enough valid Seurat objects.", type = "error", duration = 10)
       return()
     }
     
@@ -175,13 +175,17 @@ observeEvent(input$merge_button, {
             )
           }
           
+          # Join layers after integration to enable differential expression analysis
+          merged_obj <- JoinLayers(merged_obj)
+          rv$merge_log <- paste0(rv$merge_log, "Joined layers after integration to enable differential expression analysis.\n")
+          
           rv$integrated_reduction <- new_reduction
           rv$merge_log <- paste0(rv$merge_log, "Integration successful. Created reduction: ", 
                                 new_reduction, "\n")
         }, error = function(e) {
           rv$merge_log <- paste0(rv$merge_log, "Error in integration: ", e$message, "\n")
           rv$integrated_reduction <- "pca"  # Fallback to PCA
-          showNotification(paste("Integration error:", e$message), type = "error")
+          showNotification(paste("Integration error:", e$message), type = "error", duration = 10)
         })
         
         # Run UMAP if selected
@@ -275,10 +279,10 @@ observeEvent(input$merge_button, {
       rv$merge_log <- paste0(rv$merge_log, "Merge completed successfully.\n")
       rv$merge_complete <- TRUE
       
-      showNotification("Samples merged successfully!", type = "message")
+      showNotification("Samples merged successfully!", type = "message", duration = 10)
     }, error = function(e) {
       rv$merge_log <- paste0(rv$merge_log, "Error in merge process: ", e$message, "\n")
-      showNotification(paste("Error in merge process:", e$message), type = "error")
+      showNotification(paste("Error in merge process:", e$message), type = "error", duration = 10)
     })
   })
 })

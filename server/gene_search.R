@@ -27,7 +27,7 @@ observeEvent(input$multi_gene_search_button, {
   
   # Handle no genes entered
   if(length(genes) == 0) {
-    showNotification("Please enter at least one gene", type = "warning")
+    showNotification("Please enter at least one gene", type = "warning", duration = 10)
     return()
   }
   
@@ -35,7 +35,7 @@ observeEvent(input$multi_gene_search_button, {
   rv$multiple_genes <- genes
   
   # Provide feedback on how many genes were found
-  showNotification(paste(length(genes), "genes selected for visualization"), type = "message")
+  showNotification(paste(length(genes), "genes selected for visualization"), type = "message", duration = 10)
   
   # Switch to the multi-gene visualization tab in all modules
   updateTabsetPanel(session, "visualize_viz_tabs", selected = "Multi-Gene Visualization")
