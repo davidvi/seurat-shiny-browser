@@ -49,7 +49,7 @@ merge_tab <- function() {
                 "CCA Integration" = "CCAIntegration",
                 "RPCA Integration" = "RPCAIntegration",
                 "Harmony Integration" = "HarmonyIntegration",
-                "FastMNN Integration" = "FastMNNIntegration"
+                "Joint PCA Integration" = "JointPCAIntegration"
                 # Note: scVI integration requires additional setup/dependencies,
                 # so we'll exclude it for simplicity
               ),

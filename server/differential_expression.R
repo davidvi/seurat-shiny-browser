@@ -260,5 +260,6 @@ output$markers_table <- renderDataTable({
 }, options = list(
   pageLength = 10,
   scrollX = TRUE,
-  scrollY = "400px"
+  scrollY = "400px",
+  selection = list(mode = "single", target = "row")  # Allow only single row selection
 ))

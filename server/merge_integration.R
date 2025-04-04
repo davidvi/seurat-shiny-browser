@@ -167,9 +167,9 @@ observeEvent(input$merge_button, {
               orig.reduction = "pca", new.reduction = new_reduction,
               verbose = FALSE
             )
-          } else if(integration_method == "FastMNNIntegration") {
+          } else if(integration_method == "JointPCAIntegration") {
             merged_obj <- IntegrateLayers(
-              object = merged_obj, method = FastMNNIntegration,
+              object = merged_obj, method = JointPCAIntegration,
               new.reduction = new_reduction,
               verbose = FALSE
             )

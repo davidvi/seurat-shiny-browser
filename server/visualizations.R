@@ -60,8 +60,8 @@ observeEvent(input$markers_table_cell_clicked, {
         return()
       }
       
-      # Get the gene from the table
-      gene_selected <- rv$markers[info$row + 1, gene_col]  # Adding 1 because DT indices are 0-based
+      # Get the gene from the table - row indices are 0-based
+      gene_selected <- rv$markers[info$row, gene_col]
       
       if (!is.null(gene_selected) && !is.na(gene_selected) && gene_selected != "") {
         # Update the selected gene
@@ -71,6 +71,10 @@ observeEvent(input$markers_table_cell_clicked, {
         # Switch to the visualization tab and set view to single gene
         updateTabsetPanel(session, "analyze_results_tabs", selected = "Visualization")
         updateTabsetPanel(session, "analyze_viz_tabs", selected = "Single Gene Visualization")
+        
+        # Clear the row selection by proxy
+        proxy <- dataTableProxy("markers_table")
+        proxy %>% selectRows(NULL)
       }
     }
   }, error = function(e) {
