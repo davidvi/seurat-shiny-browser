@@ -43,10 +43,19 @@ analyze_tab <- function() {
           ),
           tabPanel(
             title = "Differential Expression Results",
-            h3("Marker Genes Table"),
-            p("Click on any gene in the table to visualize its expression"),
-            dataTableOutput("markers_table"),
-            downloadButton("download_data", "Download table data", class = "btn-primary")
+            fluidRow(
+              column(6,
+                h3("Marker Genes Table"),
+                p("Click on any gene in the table to visualize its expression"),
+                dataTableOutput("markers_table"),
+                downloadButton("download_data", "Download table data", class = "btn-primary")
+              ),
+              column(6,
+                h3("Gene Expression"),
+                plotOutput("analyze_de_feature_plot", height = "300px"),
+                plotOutput("analyze_de_violin_plot", height = "300px")
+              )
+            )
           )
         )
       )

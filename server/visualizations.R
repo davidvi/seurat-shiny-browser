@@ -26,7 +26,7 @@ observeEvent(input$compare_button, {
   updateTabsetPanel(session, "analyze_results_tabs", selected = "Differential Expression Results")
 })
 
-# Select visualization tab when a gene in the markers table is clicked
+# When a gene in the markers table is clicked, update plots in the same tab
 observeEvent(input$markers_table_cell_clicked, {
   tryCatch({
     info <- input$markers_table_cell_clicked
@@ -68,10 +68,6 @@ observeEvent(input$markers_table_cell_clicked, {
         rv$gene <- gene_selected
         updateTextInput(session, "gene", value = gene_selected)
         
-        # Switch to the visualization tab and set view to single gene
-        updateTabsetPanel(session, "analyze_results_tabs", selected = "Visualization")
-        updateTabsetPanel(session, "analyze_viz_tabs", selected = "Single Gene Visualization")
-        
         # Clear the row selection by proxy
         proxy <- dataTableProxy("markers_table")
         proxy %>% selectRows(NULL)
@@ -80,4 +76,30 @@ observeEvent(input$markers_table_cell_clicked, {
   }, error = function(e) {
     message("Error in markers_table_cell_clicked handler: ", e$message)
   })
+})
+
+# Create the feature plot for the DE results tab
+output$analyze_de_feature_plot <- renderPlot({
+  req(rv$sample)
+  req(rv$gene)
+  
+  reduction <- rv$selected_reduction
+  if (is.null(reduction) || !(reduction %in% Reductions(rv$sample))) {
+    reduction <- "umap"  # Default fallback if needed
+  }
+  
+  # Generate feature plot
+  FeaturePlot(rv$sample, features = rv$gene, reduction = reduction) +
+    scale_color_gradientn(colors = c("lightgrey", "blue", "purple", "red")) +
+    ggtitle(paste("Expression of", rv$gene))
+})
+
+# Create the violin plot for the DE results tab
+output$analyze_de_violin_plot <- renderPlot({
+  req(rv$sample)
+  req(rv$gene)
+  
+  # Generate violin plot
+  VlnPlot(rv$sample, features = rv$gene, pt.size = 0) +
+    ggtitle(paste("Expression of", rv$gene, "by cluster"))
 })
