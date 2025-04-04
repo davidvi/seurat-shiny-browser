@@ -83,15 +83,28 @@ output$analyze_de_feature_plot <- renderPlot({
   req(rv$sample)
   req(rv$gene)
   
-  reduction <- rv$selected_reduction
-  if (is.null(reduction) || !(reduction %in% Reductions(rv$sample))) {
-    reduction <- "umap"  # Default fallback if needed
+  if(is.null(rv$sample) || is.null(rv$gene)) {
+    plot.new()
+    text(0.5, 0.5, "No sample or gene selected", cex = 1.2)
+    return()
   }
   
-  # Generate feature plot
-  FeaturePlot(rv$sample, features = rv$gene, reduction = reduction) +
-    scale_color_gradientn(colors = c("lightgrey", "blue", "purple", "red")) +
-    ggtitle(paste("Expression of", rv$gene))
+  tryCatch({
+    reduction <- rv$selected_reduction
+    if (is.null(reduction) || !(reduction %in% Reductions(rv$sample))) {
+      reduction <- "umap"  # Default fallback if needed
+    }
+    
+    # Generate feature plot with same style as main visualization
+    FeaturePlot(rv$sample, 
+               features = rv$gene, 
+               reduction = reduction, 
+               label = TRUE) + 
+      NoLegend()
+  }, error = function(e) {
+    plot.new()
+    text(0.5, 0.5, paste("Cannot display feature on", rv$selected_reduction, "\nError:", e$message), cex = 1.2)
+  })
 })
 
 # Create the violin plot for the DE results tab
@@ -99,7 +112,19 @@ output$analyze_de_violin_plot <- renderPlot({
   req(rv$sample)
   req(rv$gene)
   
-  # Generate violin plot
-  VlnPlot(rv$sample, features = rv$gene, pt.size = 0) +
-    ggtitle(paste("Expression of", rv$gene, "by cluster"))
+  if(is.null(rv$sample) || is.null(rv$gene)) {
+    plot.new()
+    text(0.5, 0.5, "No sample or gene selected", cex = 1.2)
+    return()
+  }
+  
+  tryCatch({
+    # Generate violin plot with same style as main visualization
+    VlnPlot(rv$sample, features = c(rv$gene), pt.size = 0) + 
+      NoLegend() + 
+      xlab("")
+  }, error = function(e) {
+    plot.new()
+    text(0.5, 0.5, paste("Error displaying violin plot:", e$message), cex = 1.2)
+  })
 })
