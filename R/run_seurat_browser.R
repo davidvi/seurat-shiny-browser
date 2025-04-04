@@ -14,12 +14,12 @@
 #' @examples
 #' \dontrun{
 #' # Run with default settings
-#' run_app(data_folder = "~/my_seurat_data/")
+#' run_seurat_browser(data_folder = "~/my_seurat_data/")
 #' 
 #' # Run on a different port
-#' run_app(data_folder = "~/my_seurat_data/", port = 8080)
+#' run_seurat_browser(data_folder = "~/my_seurat_data/", port = 8080)
 #' }
-run_app <- function(data_folder = NULL, port = 3030, launch.browser = TRUE, ...) {
+run_seurat_browser <- function(data_folder = NULL, port = 3030, launch.browser = TRUE, ...) {
   # Increase max global size
   options(future.globals.maxSize = 10000 * 1024^2) # Set to ~10GB
   
@@ -65,4 +65,11 @@ run_app <- function(data_folder = NULL, port = 3030, launch.browser = TRUE, ...)
                 port = port, 
                 host = "0.0.0.0", 
                 ...)
+}
+
+#' @export
+#' @rdname run_seurat_browser
+run_app <- function(data_folder = NULL, port = 3030, launch.browser = TRUE, ...) {
+  .Deprecated("run_seurat_browser")
+  run_seurat_browser(data_folder = data_folder, port = port, launch.browser = launch.browser, ...)
 }

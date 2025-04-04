@@ -1,7 +1,10 @@
-\name{run_app}
+\name{run_seurat_browser}
+\alias{run_seurat_browser}
 \alias{run_app}
 \title{Run Seurat Shiny Browser App}
 \usage{
+run_seurat_browser(data_folder = NULL, port = 3030, launch.browser = TRUE, ...)
+
 run_app(data_folder = NULL, port = 3030, launch.browser = TRUE, ...)
 }
 \arguments{
@@ -19,9 +22,9 @@ This function launches the Seurat Shiny Browser application.
 \examples{
 \dontrun{
 # Run with default settings
-run_app(data_folder = "~/my_seurat_data/")
+run_seurat_browser(data_folder = "~/my_seurat_data/")
 
 # Run on a different port
-run_app(data_folder = "~/my_seurat_data/", port = 8080)
+run_seurat_browser(data_folder = "~/my_seurat_data/", port = 8080)
 }
 }

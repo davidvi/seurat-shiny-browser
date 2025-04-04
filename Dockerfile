@@ -58,8 +58,8 @@ args <- commandArgs(trailingOnly = TRUE)\n\
 data_folder <- args[1]\n\
 port <- as.integer(args[2])\n\
 if(is.na(port)) port <- 3030\n\
-source("run_app.R")\n\
-run_app(data_folder = data_folder, port = port)\n\
+source("run_seurat_browser.R")\n\
+run_seurat_browser(data_folder = data_folder, port = port)\n\
 ' > /home/shiny-app/docker_start.R
 
 # Make it executable

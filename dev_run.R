@@ -31,8 +31,8 @@ if (length(args) >= 2 && !is.na(args[2]) && as.integer(args[2]) > 0) {
   message("Using default port: ", port)
 }
 
-# Source the run_app function
-source("R/run_app.R")
+# Source the run_seurat_browser function
+source("R/run_seurat_browser.R")
 
 # Set options for the app
 options(future.globals.maxSize = 10000 * 1024^2) # Set to ~10GB
@@ -52,4 +52,4 @@ library(readxl)
 # Run the app in development mode with the specified port
 message("Starting Seurat Shiny Browser on port: ", port)
 message("You can access the app at: http://localhost:", port)
-run_app(data_folder = data_folder, port = port, launch.browser = TRUE)
+run_seurat_browser(data_folder = data_folder, port = port, launch.browser = TRUE)

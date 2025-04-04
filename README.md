@@ -35,10 +35,10 @@ devtools::install_github("davidvi/seurat-shiny-browser")
 library(seuratShinyBrowser)  # Package name may differ from the repository name
 
 # Default port (3030)
-run_app(data_folder = "/path/to/your/data")
+run_seurat_browser(data_folder = "/path/to/your/data")
 
 # Or specify a custom port
-run_app(data_folder = "/path/to/your/data", port = 8080)
+run_seurat_browser(data_folder = "/path/to/your/data", port = 8080)
 ```
 
 The package will automatically install all required dependencies with compatible versions, including:
@@ -135,8 +135,8 @@ Rscript dev_run.R /path/to/your/data         # Specify data folder
 Rscript dev_run.R /path/to/your/data 8080    # Specify data folder and port
 Rscript dev_run.R                            # Use default data folder (./data)
 
-# Method 2: Run directly with run_app.R
-Rscript -e "library(shiny); library(Seurat); library(shinyWidgets); library(shinyjs); library(ggplot2); library(tidyverse); library(DT); library(future); library(readxl); source('R/run_app.R'); run_app(data_folder = '/path/to/your/data', port = 3030)"
+# Method 2: Run directly with run_seurat_browser.R
+Rscript -e "library(shiny); library(Seurat); library(shinyWidgets); library(shinyjs); library(ggplot2); library(tidyverse); library(DT); library(future); library(readxl); source('R/run_seurat_browser.R'); run_seurat_browser(data_folder = '/path/to/your/data', port = 3030)"
 ```
 
 4. Access the application in your browser at:
