@@ -47,9 +47,16 @@ run_app <- function(data_folder = NULL, port = 3030, launch.browser = TRUE, ...)
   
   # Check if the app directory exists
   if (app_dir == "") {
-    # If running in development mode, use the current directory structure
-    app_dir <- file.path(getwd())
-    message("Running app in development mode")
+    # If running in development mode, check where the app files are located
+    if (dir.exists(file.path(getwd(), "inst", "shiny-app"))) {
+      # For development with package structure
+      app_dir <- file.path(getwd(), "inst", "shiny-app")
+      message("Running app from inst/shiny-app directory")
+    } else {
+      # For development with files at top level
+      app_dir <- file.path(getwd())
+      message("Running app from top-level directory")
+    }
   }
   
   # Launch the Shiny app

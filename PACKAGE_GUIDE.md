@@ -8,23 +8,26 @@ The Seurat Shiny Browser has been converted into a proper R package with the fol
 seurat-shiny-browser/
 ├── DESCRIPTION              # Package metadata and dependencies
 ├── LICENSE                  # MIT License file
-├── NAMESPACE               # Exported functions and imports
-├── R/                      # R functions for the package
-│   ├── run_app.R           # Main function to launch the app
-│   └── utils.R             # Helper functions
-├── README.md               # Project overview and documentation
-├── R_PACKAGE_INSTALL.md    # Installation instructions
-├── inst/                   # Additional package resources
-│   └── shiny-app/          # Shiny application files
-│       ├── app.R           # Main app entry point
-│       ├── global.R        # Global settings and functions
-│       ├── server.R        # Server logic
-│       ├── ui.R            # UI definition
-│       ├── server/         # Server components
-│       └── tabs/           # UI tab components
-├── man/                    # Documentation files
-└── dev_run.R               # Development script
+├── NAMESPACE                # Exported functions and imports
+├── R/                       # R functions for the package
+│   ├── run_app.R            # Main function to launch the app
+│   └── utils.R              # Helper functions
+├── README.md                # Project overview and documentation
+├── R_PACKAGE_INSTALL.md     # Installation instructions
+├── PACKAGE_CLEANUP.md       # File structure cleanup instructions
+├── inst/                    # Additional package resources
+│   └── shiny-app/           # Shiny application files
+│       ├── app.R            # Main app entry point
+│       ├── global.R         # Global settings and functions
+│       ├── server.R         # Server logic
+│       ├── ui.R             # UI definition
+│       ├── server/          # Server components
+│       └── tabs/            # UI tab components
+├── man/                     # Documentation files
+└── dev_run.R                # Development script
 ```
+
+> **Note**: You may currently see duplicate files in both top-level directories (`server/`, `tabs/`, etc.) and in the `inst/shiny-app/` directory. This duplication occurred during the package conversion process. See `PACKAGE_CLEANUP.md` for instructions on how to resolve this duplication and maintain a clean package structure.
 
 ## Key Components
 

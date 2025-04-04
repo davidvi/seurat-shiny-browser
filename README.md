@@ -74,14 +74,24 @@ cd seurat-shiny-browser
 3. Run the application:
 
 ```bash
+# Default settings
 ./run.sh
+
+# Or with custom container data folder, port, and local data directory
+./run.sh /home/shiny-app/data 8080 /path/to/your/local/data
 ```
 
 4. Access the application in your browser at:
 
 ```
-http://localhost:3030
+http://localhost:3030  # If using default port
+http://localhost:8080  # If using custom port
 ```
+
+The run.sh script accepts three optional parameters:
+1. Container data path (default: /home/shiny-app/data)
+2. Port number (default: 3030)
+3. Local data directory to mount (default: ./data)
 
 ### Option 3: Running Directly in R
 
@@ -120,7 +130,13 @@ BiocManager::install(c("preprocessCore", "Seurat"))
 3. Run the application:
 
 ```bash
-Rscript app.R /path/to/your/data
+# Method 1: Use dev_run.R with command-line arguments (RECOMMENDED)
+Rscript dev_run.R /path/to/your/data         # Specify data folder
+Rscript dev_run.R /path/to/your/data 8080    # Specify data folder and port
+Rscript dev_run.R                            # Use default data folder (./data)
+
+# Method 2: Run directly with run_app.R
+Rscript -e "library(shiny); library(Seurat); library(shinyWidgets); library(shinyjs); library(ggplot2); library(tidyverse); library(DT); library(future); library(readxl); source('R/run_app.R'); run_app(data_folder = '/path/to/your/data', port = 3030)"
 ```
 
 4. Access the application in your browser at:

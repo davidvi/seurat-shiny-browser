@@ -32,12 +32,16 @@ RUN mkdir -p /home/shiny-app/data
 RUN mkdir -p /home/shiny-app/tabs
 
 # Copy application files
-COPY global.R /home/shiny-app/global.R
-COPY ui.R /home/shiny-app/ui.R
-COPY server.R /home/shiny-app/server.R
-COPY app.R /home/shiny-app/app.R
-COPY tabs/*.R /home/shiny-app/tabs/
-COPY server/*.R /home/shiny-app/server/
+COPY inst/shiny-app/global.R /home/shiny-app/global.R
+COPY inst/shiny-app/ui.R /home/shiny-app/ui.R
+COPY inst/shiny-app/server.R /home/shiny-app/server.R
+COPY inst/shiny-app/app.R /home/shiny-app/app.R
+COPY inst/shiny-app/tabs/*.R /home/shiny-app/tabs/
+COPY inst/shiny-app/server/*.R /home/shiny-app/server/
+
+# Copy package files for running as package
+COPY R/run_app.R /home/shiny-app/run_app.R
+COPY R/utils.R /home/shiny-app/utils.R
 
 # Expose port
 EXPOSE 3030
@@ -48,8 +52,21 @@ RUN mkdir -p /home/shiny-app/server
 # Set working directory
 WORKDIR /home/shiny-app
 
+# Create a startup script
+RUN echo '#!/usr/bin/env Rscript\n\
+args <- commandArgs(trailingOnly = TRUE)\n\
+data_folder <- args[1]\n\
+port <- as.integer(args[2])\n\
+if(is.na(port)) port <- 3030\n\
+source("run_app.R")\n\
+run_app(data_folder = data_folder, port = port)\n\
+' > /home/shiny-app/docker_start.R
+
+# Make it executable
+RUN chmod +x /home/shiny-app/docker_start.R
+
 # Set entry point that allows for command-line arguments
-ENTRYPOINT ["Rscript", "app.R"]
+ENTRYPOINT ["Rscript", "docker_start.R"]
 
 # Default command - will be overridden if arguments are passed to docker run
-CMD ["/home/shiny-app/data"]
+CMD ["/home/shiny-app/data", "3030"]
