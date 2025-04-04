@@ -68,17 +68,17 @@ cd seurat-shiny-browser
 2. Build the Docker image:
 
 ```bash
-./build.sh
+./inst/docker/build.sh
 ```
 
 3. Run the application:
 
 ```bash
 # Default settings
-./run.sh
+./inst/docker/run.sh
 
 # Or with custom container data folder, port, and local data directory
-./run.sh /home/shiny-app/data 8080 /path/to/your/local/data
+./inst/docker/run.sh /home/shiny-app/data 8080 /path/to/your/local/data
 ```
 
 4. Access the application in your browser at:
@@ -135,13 +135,13 @@ install.packages("Seurat")
 3. Run the application:
 
 ```bash
-# Method 1: Use R/dev/dev_run.R with command-line arguments (RECOMMENDED)
+# Method 1: Use the package functions directly
+Rscript -e "library(seuratShinyBrowser); run_seurat_browser(data_folder = '/path/to/your/data', port = 3030)"
+
+# Method 2: For development, use the included development script
 Rscript R/dev/dev_run.R /path/to/your/data         # Specify data folder
 Rscript R/dev/dev_run.R /path/to/your/data 8080    # Specify data folder and port
 Rscript R/dev/dev_run.R                            # Use default data folder (./data)
-
-# Method 2: Run directly with the package functions
-Rscript -e "devtools::load_all(); run_seurat_browser(data_folder = '/path/to/your/data', port = 3030)"
 ```
 
 4. Access the application in your browser at:

@@ -1,1 +1,9 @@
 data/
+.Rhistory
+.RData
+.Rproj.user/
+*.Rproj
+.DS_Store
+..Rcheck/
+*.tar.gz
+*.rds
