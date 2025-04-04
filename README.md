@@ -20,7 +20,35 @@ Seurat Shiny Browser is a powerful tool designed for biologists, bioinformaticia
 
 ## Installation
 
-### Option 1: Using Docker (Recommended)
+### Option 1: Installation as an R Package (New)
+
+You can now install Seurat Shiny Browser as a standard R package:
+
+```r
+# Install devtools if you don't have it
+install.packages("devtools")
+
+# Install the package with all required dependencies (v5.0.0+ of Seurat and other packages)
+devtools::install_github("davidvi/seurat-shiny-browser")
+
+# Launch the application
+library(seuratShinyBrowser)  # Package name may differ from the repository name
+
+# Default port (3030)
+run_app(data_folder = "/path/to/your/data")
+
+# Or specify a custom port
+run_app(data_folder = "/path/to/your/data", port = 8080)
+```
+
+The package will automatically install all required dependencies with compatible versions, including:
+- Seurat (>= 5.0.0) and SeuratObject (>= 5.0.0)
+- All necessary Shiny and visualization packages
+- Data manipulation libraries (tidyverse ecosystem)
+
+See R_PACKAGE_INSTALL.md for more detailed installation instructions.
+
+### Option 2: Using Docker
 
 The easiest way to run Seurat Shiny Browser is with Docker, which eliminates the need to install R packages directly.
 
@@ -55,7 +83,7 @@ cd seurat-shiny-browser
 http://localhost:3030
 ```
 
-### Option 2: Running Directly in R
+### Option 3: Running Directly in R
 
 #### Prerequisites
 
@@ -160,7 +188,7 @@ The app works with two types of data:
 
 - **Sample Integration**:
   - Select multiple samples to merge
-  - Choose integration methods (CCA, RPCA, Harmony, FastMNN)
+  - Choose integration methods (CCA, RPCA, Harmony, Joint PCA)
   - Run clustering and UMAP on integrated data
 
 #### 6. Normalize/Cluster Tab
@@ -173,63 +201,6 @@ The app works with two types of data:
   - Cluster identification with adjustable parameters
   - Dimensional reduction (UMAP)
 
-### Custom Data Location and Port
-
-You can specify a custom data directory and port either through Docker or direct execution:
-
-- **With Docker**:
-
-```bash
-# Default port (3030)
-./run.sh /path/to/your/data
-
-# Custom port
-./run.sh /path/to/your/data 8080
-```
-
-- **Direct with R**:
-
-```bash
-# Default port (3030)
-Rscript app.R /path/to/your/data
-
-# Custom port
-Rscript app.R /path/to/your/data 8080
-```
-
-If you change the port, make sure to access the application at the correct URL (e.g., `http://localhost:8080` if you specified port 8080).
-
-## Troubleshooting
-
-### Common Issues
-
-1. **App fails to start**:
-   - Ensure the default port (3030) is not in use by another application
-   - If you encounter a port conflict, you can specify a different port using the second command line argument
-   - Check R and package versions are compatible
-
-2. **No folders or files appear**:
-   - Verify your data directory path is correct and accessible
-   - Check folder permissions
-
-3. **Analysis fails**:
-   - Ensure your Seurat objects are compatible with the Seurat version in use
-   - For large datasets, increase the memory allocation to Docker
-
-4. **UI appears but plots don't render**:
-   - Check the console logs for specific error messages
-   - Verify that the loaded Seurat object contains the expected assays and reductions
-
-## Contributing
-
-Contributions to improve the Seurat Shiny Browser are welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
@@ -239,7 +210,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - The [Seurat](https://satijalab.org/seurat/) team for their excellent single-cell analysis framework
 - The R Shiny development team
 - Contributors to the open-source packages this application relies on
-
----
-
-For additional questions or support, please [open an issue](https://github.com/davidvi/seurat-shiny-browser/issues) on the GitHub repository.

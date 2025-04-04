@@ -1,0 +1,11 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^data$
+^\.git$
+^\.github$
+^Dockerfile$
+^build\.sh$
+^run\.sh$
+^server\.R\.new$
+^test_seurat\.ipynb$
+^CLAUDE\.md$
