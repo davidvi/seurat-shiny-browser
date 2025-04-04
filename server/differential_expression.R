@@ -5,19 +5,19 @@
 observeEvent(input$find_markers, {
   # Validate we have a sample loaded
   if(is.null(rv$sample)) {
-    showNotification("No sample loaded. Please load a sample first.", type = "error")
+    showNotification("No sample loaded. Please load a sample first.", type = "error", duration = 10)
     return()
   }
   
   # Validate we have clusters
   if(length(levels(Idents(rv$sample))) == 0) {
-    showNotification("No clusters found in sample. Please run clustering first.", type = "error")
+    showNotification("No clusters found in sample. Please run clustering first.", type = "error", duration = 10)
     return()
   }
   
   # Validate a cluster is selected
   if(is.null(input$cluster_name_selector_analyze) || input$cluster_name_selector_analyze == "") {
-    showNotification("Please select a cluster for analysis", type = "warning")
+    showNotification("Please select a cluster for analysis", type = "warning", duration = 10)
     return()
   }
   
@@ -55,19 +55,22 @@ observeEvent(input$find_markers, {
         incProgress(0.9, "Done")
         showNotification(
           paste("Found", nrow(markers_result), "marker genes for cluster", input$cluster_name_selector_analyze),
-          type = "message"
+          type = "message",
+          duration = 10
         )
       } else {
         showNotification(
           paste("No marker genes found for cluster", input$cluster_name_selector_analyze, "with current threshold settings"),
-          type = "warning"
+          type = "warning",
+          duration = 10
         )
       }
       
     }, error = function(e) {
       showNotification(
         paste("Error finding markers:", e$message),
-        type = "error"
+        type = "error",
+        duration = 10
       )
     })
   })
@@ -78,19 +81,19 @@ observeEvent(input$find_markers, {
 observeEvent(input$compare_button, {
   # Validate we have a sample loaded
   if(is.null(rv$sample)) {
-    showNotification("No sample loaded. Please load a sample first.", type = "error")
+    showNotification("No sample loaded. Please load a sample first.", type = "error", duration = 10)
     return()
   }
   
   # Validate clusters are selected
   if(is.null(input$first_cluster_name_selector) || is.null(input$second_cluster_name_selector)) {
-    showNotification("Please select two clusters to compare", type = "warning")
+    showNotification("Please select two clusters to compare", type = "warning", duration = 10)
     return()
   }
   
   # Validate different clusters are selected
   if(input$first_cluster_name_selector == input$second_cluster_name_selector) {
-    showNotification("Please select two different clusters to compare", type = "warning")
+    showNotification("Please select two different clusters to compare", type = "warning", duration = 10)
     return()
   }
   
@@ -130,21 +133,24 @@ observeEvent(input$compare_button, {
         showNotification(
           paste("Found", nrow(markers_result), "differentially expressed genes between clusters", 
                 input$first_cluster_name_selector, "and", input$second_cluster_name_selector),
-          type = "message"
+          type = "message",
+          duration = 10
         )
       } else {
         showNotification(
           paste("No differentially expressed genes found between clusters", 
                 input$first_cluster_name_selector, "and", input$second_cluster_name_selector, 
                 "with current threshold settings"),
-          type = "warning"
+          type = "warning",
+          duration = 10
         )
       }
       
     }, error = function(e) {
       showNotification(
         paste("Error in differential expression analysis:", e$message),
-        type = "error"
+        type = "error",
+        duration = 10
       )
     })
   })
@@ -155,13 +161,13 @@ observeEvent(input$compare_button, {
 observeEvent(input$find_all_markers, {
   # Validate we have a sample loaded
   if(is.null(rv$sample)) {
-    showNotification("No sample loaded. Please load a sample first.", type = "error")
+    showNotification("No sample loaded. Please load a sample first.", type = "error", duration = 10)
     return()
   }
   
   # Validate we have clusters
   if(length(levels(Idents(rv$sample))) <= 1) {
-    showNotification("Need at least 2 clusters for comparison. Please run clustering first.", type = "error")
+    showNotification("Need at least 2 clusters for comparison. Please run clustering first.", type = "error", duration = 10)
     return()
   }
   
@@ -203,19 +209,22 @@ observeEvent(input$find_all_markers, {
         incProgress(0.9, "Done")
         showNotification(
           paste("Found", nrow(markers_result), "marker genes across all clusters"),
-          type = "message"
+          type = "message",
+          duration = 10
         )
       } else {
         showNotification(
           "No marker genes found with current threshold settings",
-          type = "warning"
+          type = "warning",
+          duration = 10
         )
       }
       
     }, error = function(e) {
       showNotification(
         paste("Error finding all markers:", e$message),
-        type = "error"
+        type = "error",
+        duration = 10
       )
     })
   })

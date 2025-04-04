@@ -5,7 +5,7 @@
 observeEvent(input$rename_button, {
   # Validate input
   if (input$new_cluster_name == "") {
-    showNotification("New cluster name cannot be empty", type = "error")
+    showNotification("New cluster name cannot be empty", type = "error", duration = 10)
     return()
   }
   
@@ -14,7 +14,7 @@ observeEvent(input$rename_button, {
   
   # Validate that at least one cluster is selected
   if (length(selected_clusters) == 0) {
-    showNotification("Please select at least one cluster to rename", type = "warning")
+    showNotification("Please select at least one cluster to rename", type = "warning", duration = 10)
     return()
   }
   
@@ -31,7 +31,7 @@ observeEvent(input$rename_button, {
       # Set new identity
       rv$sample <- SetIdent(rv$sample, cells = cells.use, value = input$new_cluster_name)
       
-      showNotification(paste("Cluster", selected_clusters, "renamed to", input$new_cluster_name), type = "message")
+      showNotification(paste("Cluster", selected_clusters, "renamed to", input$new_cluster_name), type = "message", duration = 10)
     } 
     # Multiple clusters selected
     else {
@@ -89,7 +89,7 @@ observeEvent(input$rename_orig_ident_button, {
   
   # Check if orig.ident column exists
   if (!("orig.ident" %in% colnames(rv$sample@meta.data))) {
-    showNotification("This Seurat object does not have an orig.ident column", type = "error")
+    showNotification("This Seurat object does not have an orig.ident column", type = "error", duration = 10)
     return()
   }
   
@@ -101,7 +101,7 @@ observeEvent(input$rename_orig_ident_button, {
   
   # Validate new name
   if (is.null(new_orig_ident) || new_orig_ident == "") {
-    showNotification("New orig.ident name cannot be empty", type = "error")
+    showNotification("New orig.ident name cannot be empty", type = "error", duration = 10)
     return()
   }
   
@@ -115,7 +115,7 @@ observeEvent(input$rename_orig_ident_button, {
       cells_to_rename <- rownames(rv$sample@meta.data)[rv$sample$orig.ident == selected_orig_ident]
       
       if (length(cells_to_rename) == 0) {
-        showNotification("No cells found with the selected orig.ident value", type = "warning")
+        showNotification("No cells found with the selected orig.ident value", type = "warning", duration = 10)
         return()
       }
       
@@ -153,7 +153,7 @@ observeEvent(input$rename_orig_ident_button, {
         type = "message"
       )
     }, error = function(e) {
-      showNotification(paste("Error renaming orig.ident:", e$message), type = "error")
+      showNotification(paste("Error renaming orig.ident:", e$message), type = "error", duration = 10)
     })
   })
 })
@@ -199,7 +199,7 @@ observeEvent(input$restore_cluster_button, {
     })
   } else {
     # No backup found
-    showNotification("No backup found. Please create a backup first.", type = "error")
+    showNotification("No backup found. Please create a backup first.", type = "error", duration = 10)
   }
 })
 
@@ -208,7 +208,7 @@ observeEvent(input$restore_cluster_button, {
 observeEvent(input$delete_cluster_button, {
   # Check if deletion is confirmed
   if (!input$confirm_delete_cluster) {
-    showNotification("Please confirm deletion by checking the confirmation box", type = "warning")
+    showNotification("Please confirm deletion by checking the confirmation box", type = "warning", duration = 10)
     return()
   }
   
@@ -217,7 +217,7 @@ observeEvent(input$delete_cluster_button, {
   
   # Check if any clusters were selected
   if (length(clusters_to_delete) == 0) {
-    showNotification("Please select at least one cluster to delete", type = "warning")
+    showNotification("Please select at least one cluster to delete", type = "warning", duration = 10)
     return()
   }
   
@@ -225,13 +225,13 @@ observeEvent(input$delete_cluster_button, {
   all_clusters <- levels(Idents(rv$sample))
   invalid_clusters <- clusters_to_delete[!clusters_to_delete %in% all_clusters]
   if (length(invalid_clusters) > 0) {
-    showNotification(paste("Some selected clusters do not exist:", paste(invalid_clusters, collapse=", ")), type = "error")
+    showNotification(paste("Some selected clusters do not exist:", paste(invalid_clusters, collapse=", ")), type = "error", duration = 10)
     return()
   }
   
   # Check if we would delete all clusters
   if (length(clusters_to_delete) == length(all_clusters)) {
-    showNotification("Cannot delete all clusters. At least one cluster must remain.", type = "error")
+    showNotification("Cannot delete all clusters. At least one cluster must remain.", type = "error", duration = 10)
     return()
   }
   
@@ -246,7 +246,7 @@ observeEvent(input$delete_cluster_button, {
       
       # Check if we would delete all cells
       if (length(cells_to_keep) == 0) {
-        showNotification("Cannot delete all cells in the dataset. At least one cell must remain.", type = "error")
+        showNotification("Cannot delete all cells in the dataset. At least one cell must remain.", type = "error", duration = 10)
         return()
       }
       
@@ -282,7 +282,7 @@ observeEvent(input$delete_cluster_button, {
         type = "message"
       )
     }, error = function(e) {
-      showNotification(paste("Error deleting clusters:", e$message), type = "error")
+      showNotification(paste("Error deleting clusters:", e$message), type = "error", duration = 10)
     })
   })
 })
