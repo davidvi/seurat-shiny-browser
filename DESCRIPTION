@@ -2,7 +2,7 @@ Package: seuratShinyBrowser
 Title: Shiny Browser for Seurat Single-Cell Data
 Version: 0.1.0
 Authors@R: 
-    person("Van Ijzen", "Developer", email = "email@example.com", role = c("aut", "cre"))
+    person("Van Ijzen", "Developer", email = "davidvanijzendoorn@gmail.com", role = c("aut", "cre"))
 Description: An interactive Shiny application for visualizing, exploring, and 
     analyzing single-cell RNA-seq data using the Seurat framework. This tool 
     provides a user-friendly interface for loading, clustering, visualizing, 
