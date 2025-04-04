@@ -10,3 +10,5 @@
 ^test_seurat\.ipynb$
 ^CLAUDE\.md$
 ^CRAN-SUBMISSION$
+^cran-comments\.md$
+^data-raw$
