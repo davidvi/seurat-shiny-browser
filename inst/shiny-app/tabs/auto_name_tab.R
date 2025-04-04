@@ -53,12 +53,41 @@ auto_name_tab <- function() {
           
           conditionalPanel(
             condition = "output.singleR_completed",
-            actionButton(
-              "transfer_labels",
-              "Transfer Labels to Active Idents",
-              icon = icon("exchange-alt"),
-              class = "btn-success",
-              style = "width: 100%;"
+            fluidRow(
+              column(
+                width = 12,
+                actionButton(
+                  "transfer_labels",
+                  "Transfer Cell Type Labels to Active Idents",
+                  icon = icon("exchange-alt"),
+                  class = "btn-success",
+                  style = "width: 100%; margin-bottom: 10px;"
+                )
+              )
+            ),
+            fluidRow(
+              column(
+                width = 12,
+                actionButton(
+                  "transfer_prefix_labels",
+                  "Transfer Cluster+Cell Type to Active Idents",
+                  icon = icon("tags"),
+                  class = "btn-info",
+                  style = "width: 100%; margin-bottom: 10px;"
+                )
+              )
+            ),
+            fluidRow(
+              column(
+                width = 12,
+                actionButton(
+                  "reset_clusters",
+                  "Reset to Original Clusters",
+                  icon = icon("undo"),
+                  class = "btn-warning",
+                  style = "width: 100%;"
+                )
+              )
             )
           )
         ),

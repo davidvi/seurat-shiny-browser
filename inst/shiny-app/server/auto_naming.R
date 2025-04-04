@@ -186,7 +186,31 @@ autoNameServer <- function(input, output, session, values, singleR_values) {
     singleR_values$running <- FALSE
   })
   
-  # Transfer labels to Idents
+  # Helper function to get cluster column and prepare mapping
+  get_cluster_mapping <- function(seurat_obj, mapping) {
+    # Get the current cluster identities column
+    if ("seurat_clusters" %in% colnames(seurat_obj@meta.data)) {
+      cluster_column <- "seurat_clusters"
+    } else {
+      # If no seurat_clusters column, create one from active identities
+      seurat_obj$temp_clusters <- as.character(seurat_obj@active.ident)
+      cluster_column <- "temp_clusters"
+    }
+    
+    # Create a lookup table for the mapping
+    cluster_to_celltype <- setNames(
+      mapping$cell_type,
+      mapping$cluster
+    )
+    
+    return(list(
+      seurat_obj = seurat_obj,
+      cluster_column = cluster_column,
+      cluster_to_celltype = cluster_to_celltype
+    ))
+  }
+  
+  # Transfer labels to Idents (cell type names only)
   observeEvent(input$transfer_labels, {
     req(values$sample, singleR_values$completed, singleR_values$cluster_mapping)
     
@@ -197,21 +221,11 @@ autoNameServer <- function(input, output, session, values, singleR_values) {
       # Extract the mapping
       mapping <- singleR_values$cluster_mapping
       
-      # First, add the SingleR labels as a new column in metadata
-      # Get the current cluster identities
-      if ("seurat_clusters" %in% colnames(seurat_obj@meta.data)) {
-        cluster_column <- "seurat_clusters"
-      } else {
-        # If no seurat_clusters column, create one from active identities
-        seurat_obj$temp_clusters <- as.character(seurat_obj@active.ident)
-        cluster_column <- "temp_clusters"
-      }
-      
-      # Create a lookup table for the mapping
-      cluster_to_celltype <- setNames(
-        mapping$cell_type,
-        mapping$cluster
-      )
+      # Get cluster mapping info
+      mapping_info <- get_cluster_mapping(seurat_obj, mapping)
+      seurat_obj <- mapping_info$seurat_obj
+      cluster_column <- mapping_info$cluster_column
+      cluster_to_celltype <- mapping_info$cluster_to_celltype
       
       # Add a new metadata column with the cell type labels
       cell_types <- character(length = nrow(seurat_obj@meta.data))
@@ -235,7 +249,7 @@ autoNameServer <- function(input, output, session, values, singleR_values) {
       
       # Show success notification
       showNotification(
-        "SingleR labels transferred to active identities",
+        "Cell type labels transferred to active identities",
         type = "message",
         duration = 5
       )
@@ -243,6 +257,100 @@ autoNameServer <- function(input, output, session, values, singleR_values) {
     }, error = function(e) {
       showNotification(
         paste("Error transferring labels:", e$message),
+        type = "error",
+        duration = 10
+      )
+    })
+  })
+  
+  # Transfer labels with cluster prefix to Idents
+  observeEvent(input$transfer_prefix_labels, {
+    req(values$sample, singleR_values$completed, singleR_values$cluster_mapping)
+    
+    tryCatch({
+      # Get the Seurat object
+      seurat_obj <- values$sample
+      
+      # Extract the mapping
+      mapping <- singleR_values$cluster_mapping
+      
+      # Get cluster mapping info
+      mapping_info <- get_cluster_mapping(seurat_obj, mapping)
+      seurat_obj <- mapping_info$seurat_obj
+      cluster_column <- mapping_info$cluster_column
+      cluster_to_celltype <- mapping_info$cluster_to_celltype
+      
+      # Add a new metadata column with prefixed labels (e.g., "0_B-cells")
+      prefixed_labels <- character(length = nrow(seurat_obj@meta.data))
+      for (i in seq_along(prefixed_labels)) {
+        cluster_id <- as.character(seurat_obj@meta.data[[cluster_column]][i])
+        if (cluster_id %in% names(cluster_to_celltype)) {
+          cell_type <- cluster_to_celltype[[cluster_id]]
+          prefixed_labels[i] <- paste0(cluster_id, "_", cell_type)
+        } else {
+          prefixed_labels[i] <- paste0(cluster_id, "_Unknown")
+        }
+      }
+      
+      # Add the prefixed labels to metadata
+      seurat_obj@meta.data$singleR_prefixed_labels <- prefixed_labels
+      
+      # Set as active ident
+      seurat_obj <- Seurat::SetIdent(seurat_obj, value = "singleR_prefixed_labels")
+      
+      # Update the Seurat object
+      values$sample <- seurat_obj
+      
+      # Show success notification
+      showNotification(
+        "Cluster+Cell type labels transferred to active identities",
+        type = "message",
+        duration = 5
+      )
+      
+    }, error = function(e) {
+      showNotification(
+        paste("Error transferring prefixed labels:", e$message),
+        type = "error",
+        duration = 10
+      )
+    })
+  })
+  
+  # Reset to original clusters
+  observeEvent(input$reset_clusters, {
+    req(values$sample)
+    
+    tryCatch({
+      # Get the Seurat object
+      seurat_obj <- values$sample
+      
+      # Check if seurat_clusters exists
+      if ("seurat_clusters" %in% colnames(seurat_obj@meta.data)) {
+        # Set back to original clusters
+        seurat_obj <- Seurat::SetIdent(seurat_obj, value = "seurat_clusters")
+        
+        # Update the Seurat object
+        values$sample <- seurat_obj
+        
+        # Show success notification
+        showNotification(
+          "Reset to original clusters",
+          type = "message",
+          duration = 5
+        )
+      } else {
+        # Warning if no seurat_clusters
+        showNotification(
+          "No 'seurat_clusters' column found in metadata",
+          type = "warning",
+          duration = 5
+        )
+      }
+      
+    }, error = function(e) {
+      showNotification(
+        paste("Error resetting clusters:", e$message),
         type = "error",
         duration = 10
       )
@@ -289,6 +397,4 @@ autoNameServer <- function(input, output, session, values, singleR_values) {
       rownames = FALSE
     )
   })
-  
-  # No longer needed - removed download functionality
 }
