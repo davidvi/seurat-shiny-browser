@@ -3,8 +3,99 @@
 # Main function for the auto name tab server logic
 autoNameServer <- function(input, output, session, values, singleR_values) {
   
+  # Initialize the folder dropdown with all available folders
+  observe({
+    req(values)
+    # Use the same all_folders that all other components use
+    updateSelectInput(session, "reference_folder", 
+                      choices = c("", all_folders),
+                      selected = input$reference_folder)
+  })
+  
+  # Update sample list when folder is selected - using global get_rds_files function
+  observeEvent(input$reference_folder, {
+    req(input$reference_folder, input$reference_folder != "")
+    
+    # Use the same file loading logic used by the rest of the app
+    ref_files <- get_rds_files(input$reference_folder)
+    
+    # Update the sample selector
+    if (length(ref_files) == 0) {
+      updateSelectInput(session, "reference_sample",
+                        choices = c("No RDS files found" = ""),
+                        selected = "")
+      message("No RDS files found in folder:", input$reference_folder)
+    } else {
+      updateSelectInput(session, "reference_sample",
+                        choices = c("", ref_files),
+                        selected = "")
+      message("Found ", length(ref_files), " RDS files in folder: ", input$reference_folder)
+    }
+  })
+  
+  # Update metadata columns when sample is selected
+  observe({
+    req(input$reference_folder, input$reference_folder != "", 
+        input$reference_sample, input$reference_sample != "")
+    
+    tryCatch({
+      # Use the same loading function used in other parts of the app
+      file_path <- paste0(base_folder, input$reference_folder, "/", input$reference_sample)
+      message("Loading metadata for sample: ", file_path)
+      
+      # Check if file exists
+      if (!file.exists(file_path)) {
+        message("Reference file not found: ", file_path)
+        updateSelectInput(session, "reference_column",
+                          choices = c("Reference file not found" = ""),
+                          selected = "")
+        return(NULL)
+      }
+      
+      # Load the object
+      ref_obj <- readRDS(file_path)
+      
+      # Get metadata columns
+      if(!inherits(ref_obj, "Seurat")) {
+        message("File is not a Seurat object")
+        updateSelectInput(session, "reference_column",
+                          choices = c("Not a Seurat object" = ""),
+                          selected = "")
+        return(NULL)
+      }
+      
+      meta_cols <- colnames(ref_obj@meta.data)
+      message("Found metadata columns: ", paste(meta_cols, collapse = ", "))
+      
+      # Find columns that might contain cell type labels
+      likely_label_cols <- meta_cols[
+        grepl("label|type|cell|cluster|ident|annotation", meta_cols, ignore.case = TRUE)
+      ]
+      
+      # If no likely columns found, use all columns
+      if(length(likely_label_cols) == 0) {
+        likely_label_cols <- meta_cols
+      }
+      
+      message("Likely label columns: ", paste(likely_label_cols, collapse = ", "))
+      
+      # Add active identity as an option
+      updateSelectInput(session, "reference_column",
+                        choices = c("active.ident", likely_label_cols),
+                        selected = "active.ident")
+      
+    }, error = function(e) {
+      message("Error loading reference sample metadata: ", e$message)
+      showNotification(
+        paste("Error loading reference sample metadata:", e$message),
+        type = "error",
+        duration = 10
+      )
+    })
+  })
+  
   # Function to get reference data based on user selection
-  get_reference_data <- function(ref_choice) {
+  get_reference_data <- function(ref_choice, ref_type) {
     # Show waiting notification
     showNotification(
       "Loading reference dataset...", 
@@ -15,20 +106,107 @@ autoNameServer <- function(input, output, session, values, singleR_values) {
     
     # Try to load reference data
     result <- tryCatch({
-      if (!requireNamespace("celldex", quietly = TRUE)) {
-        stop("The 'celldex' package is required. Please install it with BiocManager::install('celldex')")
-      }
-      
-      if (ref_choice == "hpca") {
-        ref_data <- celldex::HumanPrimaryCellAtlasData()
-      } else if (ref_choice == "blueprint_encode") {
-        ref_data <- celldex::BlueprintEncodeData()
-      } else if (ref_choice == "mouse_rnaseq") {
-        ref_data <- celldex::MouseRNAseqData()
+      if (ref_type == "builtin") {
+        # Using built-in reference
+        if (!requireNamespace("celldex", quietly = TRUE)) {
+          stop("The 'celldex' package is required. Please install it with BiocManager::install('celldex')")
+        }
+        
+        if (ref_choice == "hpca") {
+          ref_data <- celldex::HumanPrimaryCellAtlasData()
+        } else if (ref_choice == "blueprint_encode") {
+          ref_data <- celldex::BlueprintEncodeData()
+        } else if (ref_choice == "mouse_rnaseq") {
+          ref_data <- celldex::MouseRNAseqData()
+        } else {
+          stop("Invalid reference dataset selected")
+        }
+        
+        # Return as a list with the reference data and labels
+        list(
+          data = ref_data,
+          labels = NULL,  # Will be determined later based on label_type
+          type = "builtin"
+        )
+        
+      } else if (ref_type == "sample") {
+        # Using another Seurat object as reference
+        req(input$reference_folder, input$reference_folder != "",
+            input$reference_sample, input$reference_sample != "",
+            input$reference_column, input$reference_column != "")
+        
+        # Use the same file path logic as the rest of the app
+        file_path <- paste0(base_folder, input$reference_folder, "/", input$reference_sample)
+        
+        # Check if file exists
+        if (!file.exists(file_path)) {
+          stop("Reference file not found: ", file_path)
+        }
+        
+        # Load the reference Seurat object
+        message("Loading reference Seurat object from: ", file_path)
+        ref_obj <- readRDS(file_path)
+        
+        if(!inherits(ref_obj, "Seurat")) {
+          stop("Reference file is not a Seurat object")
+        }
+        
+        # Get the labels from the reference object
+        if(input$reference_column == "active.ident") {
+          labels <- as.character(ref_obj@active.ident)
+          
+          # Check if we have valid labels
+          if(length(labels) != ncol(ref_obj)) {
+            stop("Active identities don't match the number of cells in the reference")
+          }
+        } else {
+          # Get labels from metadata column
+          if(!input$reference_column %in% colnames(ref_obj@meta.data)) {
+            stop(paste("Column", input$reference_column, "not found in reference object metadata"))
+          }
+          
+          labels <- as.character(ref_obj@meta.data[[input$reference_column]])
+          
+          # Check for NA or empty labels
+          if(any(is.na(labels)) || any(labels == "")) {
+            message("Warning: Some labels in the reference are NA or empty")
+            # Filter out cells with NA or empty labels
+            valid_cells <- !is.na(labels) & labels != ""
+            ref_obj <- ref_obj[, valid_cells]
+            labels <- labels[valid_cells]
+          }
+        }
+        
+        # Check if we have any labels
+        if(length(unique(labels)) <= 1) {
+          stop("Reference object doesn't have enough distinct labels")
+        }
+        
+        message("Reference object has ", length(unique(labels)), " distinct labels")
+        
+        # Extract normalized data
+        norm_data <- tryCatch({
+          # Try Seurat 5 style
+          if (inherits(ref_obj[["RNA"]], "Assay5")) {
+            Seurat::GetAssayData(ref_obj, assay = "RNA", layer = "data")
+          } else {
+            # For Seurat v3
+            ref_obj@assays$RNA@data
+          }
+        }, error = function(e) {
+          # Generic method as fallback
+          Seurat::GetAssayData(ref_obj, slot = "data")
+        })
+        
+        # Return as a list with the reference data and labels
+        list(
+          data = norm_data,
+          labels = labels,
+          type = "sample"
+        )
       } else {
-        stop("Invalid reference dataset selected")
+        stop("Invalid reference type")
       }
-      ref_data
     }, error = function(e) {
       removeNotification(id = "ref_loading")
       showNotification(
@@ -62,9 +240,9 @@ autoNameServer <- function(input, output, session, values, singleR_values) {
     singleR_values$completed <- FALSE
     singleR_values$error <- NULL
     
-    # Get the reference dataset
-    ref_choice <- input$reference_dataset
-    label_type <- input$label_type
+    # Get reference type and details
+    ref_type <- input$reference_type
+    ref_choice <- if(ref_type == "builtin") input$reference_dataset else NULL
     
     # Try to run SingleR in a separate process to avoid blocking the UI
     withProgress(message = 'Running SingleR annotation...', value = 0.1, {
@@ -75,12 +253,22 @@ autoNameServer <- function(input, output, session, values, singleR_values) {
         }
         
         # Get reference data
-        ref_data <- get_reference_data(ref_choice)
-        req(ref_data)
+        ref_result <- get_reference_data(ref_choice, ref_type)
+        req(ref_result)
         
-        # Determine label column based on user selection
-        label_column <- if (label_type == "main") "label.main" else "label.fine"
-        labels <- ref_data[[label_column]]
+        # Get reference data and labels based on reference type
+        if (ref_result$type == "builtin") {
+          ref_data <- ref_result$data
+          
+          # Determine label column based on user selection
+          label_type <- input$label_type
+          label_column <- if (label_type == "main") "label.main" else "label.fine"
+          labels <- ref_data[[label_column]]
+        } else {
+          # For sample reference, use the normalized data and provided labels
+          ref_data <- ref_result$data
+          labels <- ref_result$labels
+        }
         
         # Simplify SingleR processing to work at the cluster level
         # First, get cluster identities
@@ -140,11 +328,15 @@ autoNameServer <- function(input, output, session, values, singleR_values) {
         cluster_data <- cluster_averages[common_genes, , drop = FALSE]
         ref_subset <- ref_data[common_genes, ]
         
-        # Run SingleR on cluster averages
+        # Determine the differential expression method
+        de_method <- input$de_method
+        
+        # Run SingleR on cluster averages with appropriate method
         singler_results <- SingleR::SingleR(
           test = cluster_data,
           ref = ref_subset,
           labels = labels,
+          de.method = if(de_method == "wilcox") "wilcox" else NULL,
           assay.type.test = 1,  # Use the first element (logcounts) for cluster averages
           BPPARAM = BiocParallel::SerialParam() # Force serial to avoid parallel errors
         )

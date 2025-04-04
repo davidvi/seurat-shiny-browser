@@ -8,33 +8,86 @@ auto_name_tab <- function() {
         width = 12,
         wellPanel(
           h4("Automatic Cell Type Annotation"),
-          p("This tab uses SingleR to automatically annotate cell clusters based on reference datasets."),
+          p("This tab uses SingleR to automatically annotate cell clusters based on either built-in reference datasets or another Seurat sample."),
+          
+          tags$div(class = "alert alert-info",
+            tags$p("You can either use built-in reference databases or another annotated Seurat object as a reference."),
+            tags$p("When using another sample, make sure it has cell type annotations in its metadata.")
+          ),
           
           fluidRow(
             column(
               width = 4,
               selectInput(
-                "reference_dataset",
-                "Reference Dataset:",
+                "reference_type",
+                "Reference Type:",
                 choices = c(
-                  "Human Primary Cell Atlas" = "hpca",
-                  "Blueprint/ENCODE" = "blueprint_encode",
-                  "Mouse RNA-seq" = "mouse_rnaseq"
+                  "Built-in Reference Database" = "builtin",
+                  "Use Another Sample as Reference" = "sample"
                 ),
-                selected = "hpca"
+                selected = "builtin"
+              ),
+              
+              conditionalPanel(
+                condition = "input.reference_type == 'builtin'",
+                selectInput(
+                  "reference_dataset",
+                  "Built-in Reference Dataset:",
+                  choices = c(
+                    "Human Primary Cell Atlas" = "hpca",
+                    "Blueprint/ENCODE" = "blueprint_encode",
+                    "Mouse RNA-seq" = "mouse_rnaseq"
+                  ),
+                  selected = "hpca"
+                )
+              ),
+              
+              conditionalPanel(
+                condition = "input.reference_type == 'sample'",
+                selectInput(
+                  "reference_folder",
+                  "Reference Sample Folder:",
+                  choices = c("Loading folders..." = ""),
+                  selected = ""
+                ),
+                selectInput(
+                  "reference_sample",
+                  "Reference Sample:",
+                  choices = c("Select folder first" = ""),
+                  selected = ""
+                ),
+                selectInput(
+                  "reference_column",
+                  "Reference Label Column:",
+                  choices = c("Select sample first" = ""),
+                  selected = ""
+                )
               )
             ),
             
             column(
               width = 4,
+              conditionalPanel(
+                condition = "input.reference_type == 'builtin'",
+                selectInput(
+                  "label_type",
+                  "Label Type:",
+                  choices = c(
+                    "Main Labels" = "main",
+                    "Fine Labels" = "fine"
+                  ),
+                  selected = "main"
+                )
+              ),
+              
               selectInput(
-                "label_type",
-                "Label Type:",
+                "de_method",
+                "Marker Detection Method:",
                 choices = c(
-                  "Main Labels" = "main",
-                  "Fine Labels" = "fine"
+                  "Classic" = "classic",
+                  "Wilcoxon Test (for single-cell)" = "wilcox"
                 ),
-                selected = "main"
+                selected = "classic"
               )
             ),
             

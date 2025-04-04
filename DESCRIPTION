@@ -37,6 +37,7 @@ Imports:
 Suggests:
     testthat (>= 3.0.0),
     SingleR,
-    celldex
+    celldex,
+    scran
 Config/testthat/edition: 3
 
