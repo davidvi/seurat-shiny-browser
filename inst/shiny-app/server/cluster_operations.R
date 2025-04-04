@@ -286,3 +286,55 @@ observeEvent(input$delete_cluster_button, {
     })
   })
 })
+
+### calculate log2UMI_cell ###
+
+observeEvent(input$add_log2umi_button, {
+  # Check if a sample is loaded
+  req(rv$sample)
+  
+  withProgress(message = "Calculating log2UMI_cell", detail = "Please wait...", value = 0, {
+    tryCatch({
+      incProgress(0.3, detail = "Checking nCount_RNA exists...")
+      
+      # Check if nCount_RNA exists
+      if (!("nCount_RNA" %in% colnames(rv$sample@meta.data))) {
+        showNotification("This Seurat object does not have an nCount_RNA column", type = "error", duration = 10)
+        return()
+      }
+      
+      incProgress(0.5, detail = "Calculating log2UMI values...")
+      
+      # Calculate log2UMI_cell
+      rv$sample@meta.data$log2UMI_cell <- log2(rv$sample@meta.data$nCount_RNA + 1)
+      
+      incProgress(0.8, detail = "Updating UI...")
+      
+      # Update the metadata columns list
+      rv$metadata_columns <- colnames(rv$sample@meta.data)
+      
+      # Update any UI elements that use metadata columns
+      if("metadata_column_selector" %in% names(input)) {
+        updateSelectInput(session, "metadata_column_selector", 
+                        choices = c("ident", rv$metadata_columns),
+                        selected = input$metadata_column_selector)
+      }
+      
+      # Update visualization options if they exist
+      if("visualization_color_by" %in% names(input)) {
+        old_selection <- input$visualization_color_by
+        updateSelectInput(session, "visualization_color_by", 
+                        choices = c("ident", rv$metadata_columns),
+                        selected = old_selection)
+      }
+      
+      # Force visualization refresh
+      rv$force_refresh <- runif(1)
+      
+      # Show success notification
+      showNotification("Successfully calculated log2UMI_cell metadata column", type = "message", duration = 5)
+    }, error = function(e) {
+      showNotification(paste("Error calculating log2UMI_cell:", e$message), type = "error", duration = 10)
+    })
+  })
+})

@@ -79,6 +79,14 @@ edit_tab <- function() {
             value = ""
           ),
           actionButton("rename_orig_ident_button", "Rename orig.ident", class = "btn-primary")
+        ),
+        wellPanel(
+          h3("Add metadata"),
+          div(
+            style = "margin-bottom: 15px;",
+            p("Add log2-transformed UMI counts as a new metadata column."),
+            actionButton("add_log2umi_button", "Calculate log2UMI_cell", class = "btn-info")
+          )
         )
       ),
       column(8,
