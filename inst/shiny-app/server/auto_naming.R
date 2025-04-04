@@ -439,6 +439,16 @@ autoNameServer <- function(input, output, session, values, singleR_values) {
       # Update the Seurat object
       values$sample <- seurat_obj
       
+      # Update cluster names after changing identities
+      values$cluster_names <- levels(Idents(seurat_obj))
+      
+      # Update all cluster selectors
+      updatePickerInput(session, "cluster_name_selector", choices = values$cluster_names)
+      updatePickerInput(session, "delete_cluster_selector", choices = values$cluster_names)
+      updateSelectInput(session, "cluster_name_selector_analyze", choices = values$cluster_names)
+      updateSelectInput(session, "first_cluster_name_selector", choices = values$cluster_names)
+      updateSelectInput(session, "second_cluster_name_selector", choices = values$cluster_names)
+      
       # Show success notification
       showNotification(
         "Cell type labels transferred to active identities",
@@ -493,6 +503,16 @@ autoNameServer <- function(input, output, session, values, singleR_values) {
       # Update the Seurat object
       values$sample <- seurat_obj
       
+      # Update cluster names after changing identities
+      values$cluster_names <- levels(Idents(seurat_obj))
+      
+      # Update all cluster selectors
+      updatePickerInput(session, "cluster_name_selector", choices = values$cluster_names)
+      updatePickerInput(session, "delete_cluster_selector", choices = values$cluster_names)
+      updateSelectInput(session, "cluster_name_selector_analyze", choices = values$cluster_names)
+      updateSelectInput(session, "first_cluster_name_selector", choices = values$cluster_names)
+      updateSelectInput(session, "second_cluster_name_selector", choices = values$cluster_names)
+      
       # Show success notification
       showNotification(
         "Cluster+Cell type labels transferred to active identities",
@@ -524,6 +544,16 @@ autoNameServer <- function(input, output, session, values, singleR_values) {
         
         # Update the Seurat object
         values$sample <- seurat_obj
+        
+        # Update cluster names after changing identities
+        values$cluster_names <- levels(Idents(seurat_obj))
+        
+        # Update all cluster selectors
+        updatePickerInput(session, "cluster_name_selector", choices = values$cluster_names)
+        updatePickerInput(session, "delete_cluster_selector", choices = values$cluster_names)
+        updateSelectInput(session, "cluster_name_selector_analyze", choices = values$cluster_names)
+        updateSelectInput(session, "first_cluster_name_selector", choices = values$cluster_names)
+        updateSelectInput(session, "second_cluster_name_selector", choices = values$cluster_names)
         
         # Show success notification
         showNotification(
