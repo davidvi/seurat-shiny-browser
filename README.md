@@ -68,17 +68,23 @@ cd seurat-shiny-browser
 2. Build the Docker image:
 
 ```bash
-./inst/docker/build.sh
+# Copy Docker files to working directory first
+cp inst/docker/Dockerfile .
+cp inst/docker/build.sh .
+cp inst/docker/run.sh .
+
+# Then build the image
+./build.sh
 ```
 
 3. Run the application:
 
 ```bash
 # Default settings
-./inst/docker/run.sh
+./run.sh
 
 # Or with custom container data folder, port, and local data directory
-./inst/docker/run.sh /home/shiny-app/data 8080 /path/to/your/local/data
+./run.sh /home/shiny-app/data 8080 /path/to/your/local/data
 ```
 
 4. Access the application in your browser at:
@@ -161,6 +167,18 @@ The app works with two types of data:
 
 2. **Raw 10X Genomics Data**  
    Create a folder structure with 10X output (matrix.mtx, features.tsv, barcodes.tsv).
+
+#### Sample Data
+
+The package includes sample data for testing in the `inst/extdata/sample/` directory:
+- A small example Seurat object: `inst/extdata/sample/example_seurat.rds`
+- An example of 10X Genomics format data: `inst/extdata/sample/raw_example/`
+
+You can use this data to test the application:
+```r
+library(seuratShinyBrowser)
+run_seurat_browser(data_folder = "inst/extdata", port = 3030)
+```
 
 ### App Workflow
 
