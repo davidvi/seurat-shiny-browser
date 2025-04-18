@@ -1,5 +1,14 @@
 # File operations module
 
+# Add an observer to refresh the folders list when the session starts
+observe({
+  # Get folders in data directory and refresh the list
+  refresh_folders()
+  
+  # Log message
+  message("Refreshed folder list on app initialization")
+})
+
 ### Helper functions for raw data loading ###
 
 # Function to check if a directory is a valid 10X Genomics data directory
@@ -563,4 +572,62 @@ observeEvent(input$save_button, {
     # Display success notification
     showNotification(paste("File saved as", file_name), type = "message", duration = 10)
   })
+})
+
+### Quick Save ###
+
+# Observer for the quick save button
+observeEvent(input$quick_save_button, {
+  req(rv$sample, rv$sample_name) # Ensure an object (rv$sample) and sample name exist
+
+  # Get the relative path from rv$sample_name
+  relative_path <- rv$sample_name
+
+  # Construct the full path using base_folder
+  full_path <- file.path(base_folder, relative_path)
+
+  # Check if the path is valid and contains a directory and filename
+  if (is.null(full_path) || full_path == "" || is.null(dirname(full_path)) || is.null(basename(full_path))) {
+    showNotification("Invalid sample name or path for saving.", type = "error")
+    return()
+  }
+
+  # Extract directory and filename for messages
+  folder_path <- dirname(full_path)
+  file_name <- basename(full_path)
+
+  # Make sure the file name ends with .rds (should already be the case if loaded correctly)
+  if (!endsWith(file_name, ".rds")) {
+     showNotification(paste("Invalid file extension for:", file_name, "- expected .rds"), type = "warning")
+     # Optionally, handle this case differently
+     return() # Stop if extension is wrong
+  }
+
+  withProgress(message = "Quick Saving Sample", detail = "Please wait...", value = 0, {
+    incProgress(0.1, "Saving Sample")
+
+    # Create the directory if it doesn't exist (safety check)
+    if (!dir.exists(folder_path)) {
+      dir.create(folder_path, recursive = TRUE)
+      showNotification(paste("Created directory:", folder_path), type = "message")
+    }
+
+    # Save the Seurat object (using rv$sample)
+    tryCatch({
+      saveRDS(rv$sample, file = full_path) # Use rv$sample and the full path
+      incProgress(0.9, "Finalizing")
+      showNotification(
+        paste("Sample saved successfully as", file_name, "in", basename(dirname(relative_path))), # Show relative folder
+        type = "message"
+      )
+    }, error = function(e) {
+      showNotification(
+        paste("Error saving sample:", e$message),
+        type = "error",
+        duration = 10
+      )
+    })
+  })
+
+  # No need to refresh file list as we are overwriting
 })

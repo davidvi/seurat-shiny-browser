@@ -20,7 +20,11 @@ ui <- fluidPage(
   useShinyjs(),
   tags$script(jsCode),
   titlePanel("Single Cell Data Explorer"),
-  h4(textOutput("sample_name")),
+  div(style = "display: flex; align-items: center; margin-bottom: 15px;",
+    h4(textOutput("sample_name"), style = "margin: 0; margin-right: 10px;"),
+    actionButton("quick_save_button", "Save", icon = icon("save"), 
+                class = "btn-primary btn-sm")
+  ),
   tabsetPanel(
     id = "main_tabs",
     load_save_tab(),

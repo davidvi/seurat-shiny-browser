@@ -21,6 +21,25 @@ server <- function(input, output, session) {
     singleR_results = NULL # For storing SingleR results
   )
   
+  # Add observer to refresh folders list when app initializes or refreshes
+  observe({
+    # Function to refresh the folders list - defined in file_operations.R
+    # Get folders in data directory
+    base_folder <- getwd()  # Ensure base_folder is defined here
+    all_folders <- list.dirs(path = base_folder, full.names = FALSE, recursive = FALSE)
+    
+    # Always include the root folder
+    all_folders <- c(".", all_folders)
+    
+    # Remove empty values
+    all_folders <- all_folders[all_folders != ""]
+    
+    # Update the reactive value
+    rv$all_folders <- all_folders
+    
+    message("Refreshed folder list on app initialization/refresh, found ", length(all_folders), " folders")
+  })
+  
   # Source all server modules
   source("server/cluster_operations.R", local = TRUE)
   source("server/gene_search.R", local = TRUE)
